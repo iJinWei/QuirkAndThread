@@ -1,0 +1,70 @@
+<!--begin::App-->
+<div class="d-flex flex-column flex-root app-root" id="kt_app_root">
+  <!--begin::Page-->
+  <div class="app-page flex-column flex-column-fluid" id="kt_app_page">
+    <ng-container *ngIf="appHeaderDisplay">
+      <!--begin::Header-->
+      <app-header [ngClass]="appHeaderDefaultClass" id="kt_app_header" class="app-header" data-kt-sticky="true" data-kt-sticky-activate="{default: true, lg: true}" data-kt-sticky-name="app-header-minimize" data-kt-sticky-offset="{default: '200px', lg: '0'}" data-kt-sticky-animation="false">
+      </app-header>
+      <!--end::Header-->
+    </ng-container>
+
+    <!--begin::Wrapper-->
+    <div class="app-wrapper flex-column flex-row-fluid" id="kt_app_wrapper">
+
+      <ng-container *ngIf="appSidebarDisplay">
+        <!--begin::sidebar-->
+        <app-sidebar #ktSidebar id="kt_app_sidebar" class="app-sidebar flex-column" [ngClass]="appSidebarDefaultClass">
+        </app-sidebar>
+        <!--end::sidebar-->
+      </ng-container>
+
+      <ng-container *ngIf="appSidebarPanelDisplay">
+        <!-- TODO: app sidebar panel -->
+      </ng-container>
+      <!--begin::Main-->
+      <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+        <!--begin::Content wrapper-->
+        <div class="d-flex flex-column flex-column-fluid">
+          <ng-container *ngIf="appToolbarDisplay">
+            <app-toolbar class="app-toolbar" [ngClass]="appToolbarCSSClass" id="kt_app_toolbar"
+              [appToolbarLayout]="appToolbarLayout"></app-toolbar>
+          </ng-container>
+          <app-content id=" kt_app_content" class="app-content" [ngClass]="contentCSSClasses"
+            [contentContainerCSSClass]="contentContainerCSSClass" [appContentContiner]="appContentContiner"
+            [appContentContainerClass]="appContentContainerClass">
+          </app-content>
+        </div>
+        <!--end::Content wrapper-->
+        <ng-container *ngIf="appFooterDisplay">
+          <app-footer class="app-footer" [ngClass]="appFooterCSSClass" id="kt_app_footer"
+            [appFooterContainerCSSClass]="appFooterContainerCSSClass"></app-footer>
+        </ng-container>
+      </div>
+      <!--end:::Main-->
+    </div>
+    <!--end::Wrapper-->
+
+  </div>
+  <!--end::Page-->
+</div>
+<!--end::App-->
+
+<app-scripts-init></app-scripts-init>
+<ng-container>
+  <app-scroll-top id="kt_scrolltop" class="scrolltop" data-kt-scrolltop="true"></app-scroll-top>
+</ng-container>
+<!-- begin:: Drawers -->
+<app-activity-drawer></app-activity-drawer>
+<app-messenger-drawer></app-messenger-drawer>
+<!-- end:: Drawers -->
+
+<!-- end:: Engage -->
+<app-engages></app-engages>
+<!-- end:: Engage -->
+
+<!-- begin:: Modals -->
+<app-main-modal></app-main-modal>
+<app-invite-users-modal></app-invite-users-modal>
+<app-upgrade-plan-modal></app-upgrade-plan-modal>
+<!-- end:: Modals -->

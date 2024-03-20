@@ -1,0 +1,57 @@
+<ng-container *ngIf="title$ | async as title">
+  <!-- begin::Title -->
+  <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 my-0"
+    [ngClass]="{'flex-column justify-content-center': appPageTitleDirection, 'align-items-center': !appPageTitleDirection}">
+    {{ title }}
+    <ng-container *ngIf="appPageTitleDescription">
+      <ng-container *ngIf="description$ | async as description">
+
+
+        <!--begin::Description-->
+        <span class="page-desc text-muted fs-7 fw-semibold" [ngClass]="{'pt-2': appPageTitleDirection === 'column'}">
+          <ng-container *ngIf="appPageTitleDirection === 'row'">
+            <!--begin::Separator-->
+            <span class="h-20px border-1 border-gray-300 border-start ms-3 mx-2"></span>
+            <!--end::Separator-->
+          </ng-container>
+
+          {{description}}
+        </span>
+        <!--end::Description-->
+      </ng-container>
+
+    </ng-container>
+
+  </h1>
+  <!-- end::Title -->
+
+  <ng-container *ngIf="appPageTitleBreadcrumb">
+    <ng-container *ngIf="bc$ | async as _bc">
+      <ng-container *ngIf="_bc.length > 0">
+        <ng-container *ngIf="appPageTitleDirection === 'row'">
+          <span class="h-20px border-gray-300 border-start mx-4"></span>
+        </ng-container>
+        <!--begin::Breadcrumb-->
+
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0"
+          [ngClass]="{'pt-1': appPageTitleDirection === 'column'}">
+          <li *ngFor="let bc of _bc" class="breadcrumb-item"
+            [ngClass]="!bc.isSeparator && bc.isActive ? 'text-gray-900' : ''"
+            [ngClass]="!bc.isSeparator && !bc.isActive ? 'text-muted' : ''">
+            <ng-container *ngIf="!bc.isSeparator">
+              <a class="text-muted text-hover-primary" [routerLink]="bc.path">
+                {{ bc.title }}
+              </a>
+            </ng-container>
+            <ng-container *ngIf="bc.isSeparator">
+              <span class="bullet bg-gray-200 w-5px h-2px"></span>
+            </ng-container>
+          </li>
+          <li class="breadcrumb-item text-gray-900">{{ title }}</li>
+        </ul>
+        <!--end::Breadcrumb-->
+
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</ng-container>

@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "quirkandthread-a151e"
+  },
+  "targets": {
+    "quirkandthread-a151e": {
+      "hosting": {
+        "demo1": [
+          "quirkandthread-a151e"
+        ]
+      }
+    }
+  }
+}

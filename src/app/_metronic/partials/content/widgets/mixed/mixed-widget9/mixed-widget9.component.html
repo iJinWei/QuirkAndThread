@@ -1,0 +1,147 @@
+<div class="card-header border-0 py-5">
+  <h3 class="card-title align-items-start flex-column">
+    <span class="card-label fw-bolder fs-3 mb-1">Sales Statistics</span>
+
+    <span class="text-muted fw-bold fs-7">Recent sales statistics</span>
+  </h3>
+
+  <div class="card-toolbar">
+    <!-- begin::Menu -->
+    <button
+      type="button"
+      class="btn btn-sm btn-icon btn-color-primary btn-active-light-primary"
+      data-kt-menu-trigger="click"
+      data-kt-menu-placement="bottom-end"
+      data-kt-menu-flip="top-end"
+    >
+      <app-keenicon name="category" class="fs-2"></app-keenicon>
+    </button>
+    <app-dropdown-menu1></app-dropdown-menu1>
+    <!-- end::Menu -->
+  </div>
+</div>
+<!-- end::Header -->
+
+<!-- begin::Body -->
+<div class="card-body p-0 d-flex flex-column">
+  <!-- begin::Stats -->
+  <div class="card-px pt-5 pb-10 flex-grow-1">
+    <!-- begin::Row -->
+    <div class="row g-0 mt-5 mb-10">
+      <!-- begin::Col -->
+      <div class="col">
+        <div class="d-flex align-items-center me-2">
+          <!-- begin::Symbol -->
+          <div class="symbol symbol-50px me-3">
+            <div class="symbol-label bg-light-info">
+              <app-keenicon name="bucket" class="fs-1 text-info"></app-keenicon>
+            </div>
+          </div>
+          <!-- end::Symbol -->
+
+          <!-- begin::Title -->
+          <div>
+            <div class="fs-4 text-gray-900 fw-bolder">$2,034</div>
+            <div class="fs-7 text-muted fw-bold">Author Sales</div>
+          </div>
+          <!-- end::Title -->
+        </div>
+      </div>
+      <!-- end::Col -->
+
+      <!-- begin::Col -->
+      <div class="col">
+        <div class="d-flex align-items-center me-2">
+          <!-- begin::Symbol -->
+          <div class="symbol symbol-50px me-3">
+            <div class="symbol-label bg-light-danger">
+              <app-keenicon name="abstract-26" class="fs-1 text-danger"></app-keenicon>
+            </div>
+          </div>
+          <!-- end::Symbol -->
+
+          <!-- begin::Title -->
+          <div>
+            <div class="fs-4 text-gray-900 fw-bolder">$706</div>
+            <div class="fs-7 text-muted fw-bold">Commision</div>
+          </div>
+          <!-- end::Title -->
+        </div>
+      </div>
+      <!-- end::Col -->
+    </div>
+    <!-- end::Row -->
+
+    <!-- begin::Row -->
+    <div class="row g-0">
+      <!-- begin::Col -->
+      <div class="col">
+        <div class="d-flex align-items-center me-2">
+          <!-- begin::Symbol -->
+          <div class="symbol symbol-50px me-3">
+            <div class="symbol-label bg-light-success">
+              <app-keenicon name="basket" class="fs-1 text-success"></app-keenicon>
+            </div>
+          </div>
+          <!-- end::Symbol -->
+
+          <!-- begin::Title -->
+          <div>
+            <div class="fs-4 text-gray-900 fw-bolder">$49</div>
+            <div class="fs-7 text-muted fw-bold">Average Bid</div>
+          </div>
+          <!-- end::Title -->
+        </div>
+      </div>
+      <!-- end::Col -->
+
+      <!-- begin::Col -->
+      <div class="col">
+        <div class="d-flex align-items-center me-2">
+          <!-- begin::Symbol -->
+          <div class="symbol symbol-50px me-3">
+            <div class="symbol-label bg-light-primary">
+              <app-keenicon name="ecm010.svg" class="fs-1 text-primary"></app-keenicon>
+            </div>
+          </div>
+          <!-- end::Symbol -->
+
+          <!-- begin::Title -->
+          <div>
+            <div class="fs-4 text-gray-900 fw-bolder">$5.8M</div>
+            <div class="fs-7 text-muted fw-bold">All Time Sales</div>
+          </div>
+          <!-- end::Title -->
+        </div>
+      </div>
+      <!-- end::Col -->
+    </div>
+    <!-- end::Row -->
+  </div>
+  <!-- end::Stats -->
+
+  <!-- begin::Chart -->
+  <div
+    #chartRef
+    class="mixed-widget-6-chart card-rounded-bottom"
+    [style.height]="chartHeight"
+  >
+    <apx-chart
+      [series]="chartOptions.series"
+      [chart]="chartOptions.chart"
+      [xaxis]="chartOptions.xaxis"
+      [yaxis]="chartOptions.yaxis"
+      [dataLabels]="chartOptions.dataLabels"
+      [stroke]="chartOptions.stroke"
+      [legend]="chartOptions.legend"
+      [fill]="chartOptions.fill"
+      [states]="chartOptions.states"
+      [tooltip]="chartOptions.tooltip"
+      [colors]="chartOptions.colors"
+      [markers]="chartOptions.markers"
+      [plotOptions]="chartOptions.plotOptions"
+    ></apx-chart>
+  </div>
+  <!-- end::Chart -->
+</div>
+<!-- end::Body -->
