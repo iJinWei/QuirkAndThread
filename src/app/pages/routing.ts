@@ -2,6 +2,10 @@ import { Routes } from '@angular/router';
 
 const Routing: Routes = [
   {
+    path: 'product',
+    loadChildren: () => import('./product/product.module').then((m) => m.ProductModule),
+  },
+  {
     path: 'dashboard',
     loadChildren: () => import('./dashboard/dashboard.module').then((m) => m.DashboardModule),
   },
