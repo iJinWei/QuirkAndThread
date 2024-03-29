@@ -5,10 +5,11 @@
   "targets": {
     "quirkandthread-a151e": {
       "hosting": {
-        "demo1": [
+        "default": [
           "quirkandthread-a151e"
         ]
       }
     }
-  }
+  },
+  "etags": {}
 }
