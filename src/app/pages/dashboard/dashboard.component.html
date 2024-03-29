@@ -1,3 +1,74 @@
+<!-- Testing -->
+<div>
+  <h2> TESTING (PRODUCT MANAGEMENT) </h2>
+  <br>
+
+  <form [formGroup]="productForm" (ngSubmit)="addProduct()">
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td><label for="category">Category:</label></td>
+        <td>
+          <select id="category" formControlName="category">
+            <option value="">Select a category</option>
+            <option *ngFor="let category of categories" [value]="category.name">{{category.name}}</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td><label for="description">Description:</label></td>
+        <td><input id="description" formControlName="description" placeholder="Description"></td>
+      </tr>
+      <tr>
+        <td><label for="imageUrl">Image URL:</label></td>
+        <td><input id="imageUrl" formControlName="imageUrl" placeholder="Image URL"></td>
+      </tr>
+      <tr>
+        <td><label for="name">Name:</label></td>
+        <td><input id="name" formControlName="name" placeholder="Name"></td>
+      </tr>
+      <tr>
+        <td><label for="price">Price:</label></td>
+        <td><input id="price" type="number" formControlName="price" placeholder="Price"></td>
+      </tr>
+      <tr>
+        <td><label for="stockQuantity">Stock Quantity:</label></td>
+        <td><input id="stockQuantity" type="number" formControlName="stockQuantity" placeholder="Stock Quantity"></td>
+      </tr>
+    </table>
+    <div style="text-align: center; margin-top: 20px;">
+      <button type="submit">Add Product</button>
+    </div>
+  </form>
+  
+  
+
+  <br><br><br>
+
+  <table style="width: 100%; border-collapse: separate; border-spacing: 10px;">
+    <thead>
+      <tr>
+        <th style="padding: 0 15px;">Category</th>
+        <th style="padding: 0 15px;">Name</th>
+        <th style="padding: 0 15px;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let product of products$ | async">
+        <td style="padding: 0 15px;">{{product.category}}</td>
+        <td style="padding: 0 15px;">{{product.name}}</td>
+        <td style="padding: 0 15px;">
+          <button (click)="deleteProduct(product.id)">Delete Product</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  
+
+  <br><br><br>
+</div>
+<!-- Testing -->
+
 <!--begin::Row-->
 <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
   <!--begin::Col-->

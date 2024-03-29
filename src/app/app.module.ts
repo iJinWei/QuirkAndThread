@@ -16,6 +16,8 @@ import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 import { FakeAPIService } from './_fake/fake-api.service';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { SharedService } from './shared.service';
+import { ReactiveFormsModule } from '@angular/forms';
 // #fake-end#
 
 function appInitializer(authService: AuthService) {
@@ -35,6 +37,7 @@ function appInitializer(authService: AuthService) {
     TranslateModule.forRoot(),
     HttpClientModule,
     ClipboardModule,
+    ReactiveFormsModule,
     // #fake-start#
     environment.isMockEnabled
       ? HttpClientInMemoryWebApiModule.forRoot(FakeAPIService, {
@@ -57,6 +60,7 @@ function appInitializer(authService: AuthService) {
       multi: true,
       deps: [AuthService],
     },
+    SharedService,
   ],
   bootstrap: [AppComponent],
 })
