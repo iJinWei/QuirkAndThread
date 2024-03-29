@@ -36,7 +36,6 @@
       ]
     },
     {
-      "target": "demo1",
       "site": "quirkandthread-a151e ",
       "source": ".",
       "frameworksBackend": {}
