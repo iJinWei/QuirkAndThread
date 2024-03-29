@@ -1,0 +1,23 @@
+<table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
+    <thead>
+      <tr>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Date</th>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Name</th>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Status</th>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Total Amount</th>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let order of orders$ | async" style="border-bottom: 1px solid #ccc;">
+        <td style="padding: 0 15px;">{{ (order.date.seconds * 1000) | date:'dd MMM yyyy, HH:mm:ss' }}</td>
+        <td style="padding: 0 15px;">{{order.name}}</td>
+        <td style="padding: 0 15px;">${{order.status}}</td>
+        <td style="padding: 0 15px;">{{order.totalAmount}}</td>
+        <td style="padding: 0 15px;">
+          <button style="cursor: pointer;" (click)="editOrder(order)">Edit Order</button>
+          <button style="cursor: pointer;" (click)="deleteOrder(order.id)">Delete Order</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>

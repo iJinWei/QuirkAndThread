@@ -5,11 +5,11 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+  selector: 'app-order',
+  templateUrl: './order.component.html',
+  styleUrl: './order.component.scss'
 })
-export class DashboardComponent implements OnInit {
+export class OrderComponent implements OnInit {
   modalConfig: ModalConfig = {
     modalTitle: 'Modal title',
     dismissButtonLabel: 'Submit',
@@ -18,11 +18,20 @@ export class DashboardComponent implements OnInit {
   @ViewChild('modal') private modalComponent: ModalComponent;
   constructor(private service:SharedService, private fb: FormBuilder) {}
 
+  orders$: Observable<any[]>;
+
+  refreshOrders() {
+    this.orders$ = this.service.getOrders();
+  }
 
   ngOnInit() {
+    this.refreshOrders();
   }
 
-  async openModal() {
-    return await this.modalComponent.open();
+  editOrder(order: any): void {
   }
+  
+  deleteOrder(id:string) {
+  }
+
 }

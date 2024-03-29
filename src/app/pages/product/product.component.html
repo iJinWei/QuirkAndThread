@@ -1,1 +1,75 @@
-<p>product works!</p>
+
+
+<form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding-right: 5px; white-space: nowrap;"><label for="category">Category:</label></td>
+          <td>
+            <select id="category" formControlName="category" style="width: calc(100% - 10px);">
+              <option value="">Select a category</option>
+              <option *ngFor="let category of categories" [value]="category.name">{{category.name}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-right: 5px; white-space: nowrap;"><label for="description">Description:</label></td>
+          <td><input id="description" formControlName="description" placeholder="Description" style="width: calc(100% - 10px);"></td>
+        </tr>
+        <tr>
+          <td style="padding-right: 5px; white-space: nowrap;"><label for="imageUrl">Image URL:</label></td>
+          <td><input id="imageUrl" formControlName="imageUrl" placeholder="Image URL" style="width: calc(100% - 10px);"></td>
+        </tr>
+        <tr>
+          <td style="padding-right: 5px; white-space: nowrap;"><label for="name">Name:</label></td>
+          <td><input id="name" formControlName="name" placeholder="Name" style="width: calc(100% - 10px);"></td>
+        </tr>
+        <tr>
+          <td style="padding-right: 5px; white-space: nowrap;"><label for="price">Price:</label></td>
+          <td><input id="price" type="number" formControlName="price" placeholder="Price" style="width: calc(100% - 10px);"></td>
+        </tr>
+        <tr>
+          <td style="padding-right: 5px; white-space: nowrap;"><label for="stockQuantity">Stock Quantity:</label></td>
+          <td><input id="stockQuantity" type="number" formControlName="stockQuantity" placeholder="Stock Quantity" style="width: calc(100% - 10px);"></td>
+        </tr>
+      </table>      
+    <div style="text-align: center; margin-top: 20px;">
+      <button type="submit">Add Product</button>
+    </div>
+  </form>
+  
+  
+
+  <br><br><br>
+
+  <div style="margin-bottom: 20px; text-align: center;">
+    <label for="filterCategory">Filter by Category:</label>
+    <select id="filterCategory" (change)="filterProducts($event)">
+      <option value="">All Categories</option>
+      <option *ngFor="let category of categories" [value]="category.name">{{category.name}}</option>
+    </select>
+  </div>
+  
+
+  <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
+    <thead>
+      <tr>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Category</th>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Name</th>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Price</th>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Stock</th>
+        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let product of products$ | async" style="border-bottom: 1px solid #ccc;">
+        <td style="padding: 0 15px;">{{product.category}}</td>
+        <td style="padding: 0 15px;">{{product.name}}</td>
+        <td style="padding: 0 15px;">${{product.price}}</td>
+        <td style="padding: 0 15px;">{{product.stockQuantity}}</td>
+        <td style="padding: 0 15px;">
+          <button style="cursor: pointer;" (click)="editProduct(product)">Edit Product</button>
+          <button style="cursor: pointer;" (click)="deleteProduct(product.id)">Delete Product</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
