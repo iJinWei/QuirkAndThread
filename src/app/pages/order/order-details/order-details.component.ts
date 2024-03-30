@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { IOrder } from 'src/app/models/order.model';
 import { Timestamp } from 'firebase/firestore';
 import { CommonModule } from '@angular/common';
+import { IOrderItem } from 'src/app/models/order-item.model';
 
 
 @Component({
@@ -27,12 +28,15 @@ export class OrderDetailsComponent implements OnInit {
 
   }
   order$: Observable<IOrder>;
+  orderItems$: Observable<Array<IOrderItem>>;
   orderId: string;
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       const orderId = params['id']
       this.order$ = this.service.getOrderById(orderId)
+      this.orderItems$ = this.service.getOrderItemsByOrderId(orderId)
+      console.log(this.order$)
     })
     console.log("order-details =======> ngOnInit")
   }

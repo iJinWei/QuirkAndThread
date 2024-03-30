@@ -55,6 +55,12 @@ export class SharedService {
     return docData(docRef, {idField: 'id'}) as Observable<IOrder>;
   }
 
+  getOrderItemsByOrderId(orderId: string) {
+    let ordersCollection = collection(this.fs, 'orderItems');
+    const q = query(ordersCollection, where("orderId", "==", orderId));
+    return collectionData(q, { idField: 'id' });
+  }
+
   addOrder(order: any) {
     let ordersCollection = collection(this.fs, 'orders');
     return addDoc(ordersCollection, order);

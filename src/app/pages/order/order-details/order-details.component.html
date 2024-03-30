@@ -1,14 +1,43 @@
 <ng-container *ngIf="order$ | async as order">
-    <h2>Order Details</h2>
     <div class="card">
       <div class="card-body">
         <h5 class="card-title">Order Information</h5>
         <ul class="list-group">
-          <li class="list-group-item"><strong>Order ID:</strong> {{ orderId }}</li>
+          <li class="list-group-item"><strong>Order ID:</strong> {{ order.id }}</li>
           <li class="list-group-item"><strong>Customer Name:</strong> {{order.name}}</li>
           <li class="list-group-item"><strong>Order Date:</strong> {{ parseDate(order.date)}}</li>
+          <li class="list-group-item"><strong>Order Status:</strong> {{ order.status}}</li>
+          <li class="list-group-item"><strong>Order Amount:</strong> ${{order.totalAmount}}</li>
           <!-- Add more order details here -->
         </ul>
       </div>
     </div>
+    <br>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Products</h5>
+            <table class="table-light" style="width: 100%; padding:2%;">
+                <thead class="table-primary">
+                    <tr>
+                    <th scope="col">Product ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    <tr *ngFor="let orderItem of orderItems$ | async"  style="border-bottom: 1px solid #ccc;">
+                        <td>{{orderItem.productId}}</td>
+                        <td>{{orderItem.productName}}</td>
+                        <td>{{orderItem.price}}</td>
+                        <td>{{orderItem.quantity}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    
+    </div>
+
+    
 </ng-container>
