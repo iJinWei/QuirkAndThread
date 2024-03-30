@@ -22,7 +22,7 @@
   "hosting": [
     {
       "target": "default",
-      "public": "public",
+      "public": "dist/demo1/browser",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -36,7 +36,7 @@
       ]
     },
     {
-      "site": "quirkandthread-a151e ",
+      "site": "quirkandthread-a151e",
       "source": ".",
       "frameworksBackend": {}
     }
