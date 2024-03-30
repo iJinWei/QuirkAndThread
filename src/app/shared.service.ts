@@ -68,4 +68,14 @@ export class SharedService {
     let docRef = doc(this.fs, 'orders', id);
     return updateDoc(docRef, order);
   }
+
+
+  // Users Firestore Methods
+  addUser(user: any) {
+    let usersCollection = collection(this.fs, 'users');
+    return addDoc(usersCollection, user);
+  }
+
+
+
 }
