@@ -22,16 +22,42 @@ export class OrderComponent implements OnInit {
 
   refreshOrders() {
     this.orders$ = this.service.getOrders();
+    console.log("refreshOrders()")
+  }
+
+  private showAlert(message: string, alertClass: string) {
+    const alertElement = document.getElementById('alertMessage');
+    if (alertElement) {
+      alertElement.innerHTML = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      const closeButton = alertElement.querySelector('.btn-close');
+      if (closeButton) {
+        closeButton.addEventListener('click', () => {
+          alertElement.innerHTML = ''; // Close the alert when the close button is clicked
+        });
+      }
+    }
   }
 
   ngOnInit() {
     this.refreshOrders();
+    console.log("ngOnInit()")
   }
 
   editOrder(order: any): void {
   }
   
   deleteOrder(id:string) {
+    if (confirm("Are you sure you want to delete this order?")) {
+      this.service.deleteOrder(id).then((res)=>{
+        this.showAlert(`Order ${id} deleted successfully`, `alert-success`);
+        this.refreshOrders();
+      })
+    }
   }
 
 }

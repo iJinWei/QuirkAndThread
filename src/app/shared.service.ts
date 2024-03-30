@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, query, updateDoc, where } from '@angular/fire/firestore';
+import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, docData, getDoc, query, updateDoc, where } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
+import { IOrder } from './models/order.model';
 
 @Injectable({
   providedIn: 'root'
@@ -46,6 +48,11 @@ export class SharedService {
   getOrders() {
     let ordersCollection = collection(this.fs, 'orders');
     return collectionData(ordersCollection, {idField:'id'});
+  }
+
+  getOrderById(id: string) {
+    const docRef = doc(this.fs, 'orders', id);
+    return docData(docRef, {idField: 'id'}) as Observable<IOrder>;
   }
 
   addOrder(order: any) {

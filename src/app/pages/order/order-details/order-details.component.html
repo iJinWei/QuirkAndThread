@@ -1,0 +1,14 @@
+<ng-container *ngIf="order$ | async as order">
+    <h2>Order Details</h2>
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Order Information</h5>
+        <ul class="list-group">
+          <li class="list-group-item"><strong>Order ID:</strong> {{ orderId }}</li>
+          <li class="list-group-item"><strong>Customer Name:</strong> {{order.name}}</li>
+          <li class="list-group-item"><strong>Order Date:</strong> {{ parseDate(order.date)}}</li>
+          <!-- Add more order details here -->
+        </ul>
+      </div>
+    </div>
+</ng-container>
