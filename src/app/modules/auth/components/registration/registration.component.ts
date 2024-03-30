@@ -85,28 +85,66 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     );
   }
 
+  // submit() {
+  //   this.hasError = false;
+  //   const result: {
+  //     [key: string]: string;
+  //   } = {};
+  //   Object.keys(this.f).forEach((key) => {
+  //     result[key] = this.f[key].value;
+  //   });
+  //   const newUser = new UserModel();
+  //   newUser.setUser(result);
+  //   const registrationSubscr = this.authService
+  //     .registration(newUser)
+  //     .pipe(first())
+  //     .subscribe((user: UserModel) => {
+  //       if (user) {
+  //         this.router.navigate(['/']);
+  //       } else {
+  //         this.hasError = true;
+  //       }
+  //     });
+  //   this.unsubscribe.push(registrationSubscr);
+  // }
+
+  // Firebase
   submit() {
     this.hasError = false;
-    const result: {
-      [key: string]: string;
-    } = {};
+    const result: { [key: string]: string } = {};
     Object.keys(this.f).forEach((key) => {
       result[key] = this.f[key].value;
     });
     const newUser = new UserModel();
     newUser.setUser(result);
+  
     const registrationSubscr = this.authService
-      .registration(newUser)
-      .pipe(first())
-      .subscribe((user: UserModel) => {
-        if (user) {
-          this.router.navigate(['/']);
-        } else {
+      .registrationFirebase(newUser)
+      .subscribe({
+        next: (user) => {
+          if (user) {
+            // Registration successful
+            alert('Registration successful!');
+            this.router.navigate(['/']);
+          } else {
+            // This condition might not be necessary if a successful registration always returns a user.
+            // Consider removing this else block if the API guarantees a user object on success.
+            this.hasError = true;
+            alert('Registration failed. Please try again.');
+          }
+        },
+        error: (err) => {
           this.hasError = true;
+          console.error(err);
+          // Display an alert with the error message
+          alert(`Registration failed: ${err.message}`);
         }
       });
+  
     this.unsubscribe.push(registrationSubscr);
   }
+  
+  
 
   ngOnDestroy() {
     this.unsubscribe.forEach((sb) => sb.unsubscribe());

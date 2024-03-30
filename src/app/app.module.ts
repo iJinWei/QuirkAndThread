@@ -18,16 +18,26 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { SharedService } from './shared.service';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 // #fake-end#
 
+// function appInitializer(authService: AuthService) {
+//   return () => {
+//     return new Promise((resolve) => {
+//       //@ts-ignore
+//       authService.getUserByToken().subscribe().add(resolve);
+//     });
+//   };
+// }
+
+// Attempting to fix getting logged out when refreshing page
 function appInitializer(authService: AuthService) {
-  return () => {
-    return new Promise((resolve) => {
-      //@ts-ignore
-      authService.getUserByToken().subscribe().add(resolve);
-    });
-  };
+  return () => new Promise((resolve) => {
+    authService.getAuthState().subscribe(resolve, resolve);
+  });
 }
+
 
 @NgModule({
   declarations: [AppComponent],
@@ -52,6 +62,8 @@ function appInitializer(authService: AuthService) {
     SweetAlert2Module.forRoot(),
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideFirestore(() => getFirestore()),
+    AngularFireModule.initializeApp(environment.firebase), // Make sure you're passing the correct environment variable
+    AngularFireAuthModule,
   ],
   providers: [
     {
