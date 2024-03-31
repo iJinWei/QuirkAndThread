@@ -19,7 +19,7 @@
         <td>{{order.status}}</td>
         <td>${{order.totalAmount}}</td>
         <td>
-          <button type="button" class="btn btn-primary btn-sm" style="cursor: pointer; margin: 1%; " (click)="editOrder(order)">Edit Order</button>
+          <a [routerLink]="['/order', order.id]" type="button" class="btn btn-primary btn-sm" style="cursor: pointer; margin: 1%; ">Manage Order</a>
           <button type="button" class="btn btn-danger btn-sm" style="cursor: pointer; margin: 1%; " (click)="deleteOrder(order.id)">Delete Order</button>
         </td>
       </tr>
