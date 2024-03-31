@@ -1,21 +1,68 @@
 <ng-container *ngIf="order$ | async as order">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Order Information</h5>
-        <ul class="list-group">
-          <li class="list-group-item"><strong>Order ID:</strong> {{ order.id }}</li>
-          <li class="list-group-item"><strong>Customer Name:</strong> {{order.name}}</li>
-          <li class="list-group-item"><strong>Order Date:</strong> {{ parseDate(order.date)}}</li>
-          <li class="list-group-item"><strong>Order Status:</strong> {{ order.status}}</li>
-          <li class="list-group-item"><strong>Order Amount:</strong> ${{order.totalAmount}}</li>
-          <!-- Add more order details here -->
-        </ul>
-      </div>
+    <div *ngIf="!editMode">
+        <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Order Details</h4>
+              <ul class="list-group">
+                  <li class="list-group-item"><strong>Order ID:</strong> {{ order.id }}</li>
+                  <li class="list-group-item"><strong>Customer Name:</strong> {{order.name}}</li>
+                  <li class="list-group-item"><strong>Date Ordered:</strong> {{ parseDate(order.date)}}</li>
+                  <li class="list-group-item"><strong>Status:</strong> {{order.status}}</li>
+                  <li class="list-group-item"><strong>Total Amount:</strong> ${{order.totalAmount}}</li>
+              </ul>
+              <br>
+              <button class="btn btn-primary" (click)="toggleEditMode(order)">Update Order Status</button>
+            </div>
+          </div>
     </div>
+    <div *ngIf="editMode">
+        <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Update Order Status</h4>
+              
+              <form [formGroup]="editOrderForm" (ngSubmit)="updateOrder(order)">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <strong>Order ID:</strong> {{ order.id }}
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Customer Name:</strong> {{order.name}}
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Date Ordered:</strong> {{ parseDate(order.date)}}
+                    </li>
+                    <li class="list-group-item">
+                        <label for="status"><strong>Status: </strong></label>
+                        <select id="status" formControlName="status">
+                            <option value="">Select a status</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Preparing to be shipped">Preparing to be shipped</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                        </select>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Total Amount:</strong> ${{order.totalAmount}}
+                    </li>
+                </ul>
+
+                <br>
+                <div style="margin-top: 1%;">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    &nbsp;
+                    <button type="button" class="btn btn-secondary" (click)="toggleEditMode(order)">Cancel</button>
+                </div>
+
+              </form>
+              <br>
+            </div>
+          </div>
+    </div>
+
     <br>
     <div class="card">
         <div class="card-body">
-            <h5 class="card-title">Products</h5>
+            <h4 class="card-title">Products</h4>
             <table class="table-light" style="width: 100%; padding:2%;">
                 <thead class="table-primary">
                     <tr>
