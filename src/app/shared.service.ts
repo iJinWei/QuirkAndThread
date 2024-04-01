@@ -103,4 +103,12 @@ export class SharedService {
     return docData(docRef, {idField: 'id'}) as Observable<IOrderItem>;
   }
 
+  // Users Firestore Methods
+  addUser(user: any) {
+    let usersCollection = collection(this.fs, 'users');
+    return addDoc(usersCollection, user);
+  }
+
+
+
 }

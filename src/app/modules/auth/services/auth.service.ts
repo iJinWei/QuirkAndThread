@@ -1,11 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, BehaviorSubject, of, Subscription } from 'rxjs';
+import { Observable, BehaviorSubject, of, Subscription, from } from 'rxjs';
 import { map, catchError, switchMap, finalize } from 'rxjs/operators';
 import { UserModel } from '../models/user.model';
 import { AuthModel } from '../models/auth.model';
 import { AuthHTTPService } from './auth-http';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 export type UserType = UserModel | undefined;
 
@@ -33,7 +34,8 @@ export class AuthService implements OnDestroy {
 
   constructor(
     private authHttpService: AuthHTTPService,
-    private router: Router
+    private router: Router,
+    private afAuth: AngularFireAuth
   ) {
     this.isLoadingSubject = new BehaviorSubject<boolean>(false);
     this.currentUserSubject = new BehaviorSubject<UserType>(undefined);
@@ -138,4 +140,128 @@ export class AuthService implements OnDestroy {
   ngOnDestroy() {
     this.unsubscribe.forEach((sb) => sb.unsubscribe());
   }
+
+
+  // Firebase functions
+
+  // Registration of User
+  registrationFirebase(user: UserModel): Observable<any> {
+    return from(
+      this.afAuth.createUserWithEmailAndPassword(user.email, user.password)
+    ).pipe(
+      map((userCredential) => {
+        // Handle additional registration logic here, like updating the profile
+        return userCredential.user;
+      }),
+      catchError((error) => {
+        // Handle errors
+        console.error('Registration error', error);
+        throw error;
+      })
+    );
+  }
+
+  sendEmailVerification(user: any) {
+    user.sendEmailVerification().then((res: any) => {
+      this.router.navigate(['/auth/verify-email']);
+    }, (error: any) => {
+      alert('Something went wrong, verification email not sent.');
+    })
+  }
+  
+  loginFirebase(email: string, password: string): Observable<UserModel | undefined> {
+    this.isLoadingSubject.next(true);
+    return from(this.afAuth.signInWithEmailAndPassword(email, password)).pipe(
+      map((userCredential) => {
+        if (!userCredential.user || userCredential.user.email === null) {
+          throw new Error('Authentication failed: User or email is missing');
+        }
+
+        // Simulate the UserModel based on Firebase User
+        const userModel = new UserModel();
+        userModel.setUser({
+          id: userCredential.user.uid,
+          email: userCredential.user.email,
+          // Populate other UserModel fields as needed, or leave them with default/placeholder values
+          username: '', // Username is not provided by Firebase Auth
+          password: '', // Password should not be stored on the client-side
+          fullname: '', // Fullname is not provided by Firebase Auth
+          pic: './assets/media/avatars/blank.png',
+          roles: [],
+          occupation: '',
+          companyName: '',
+          phone: '',
+          emailVerified: userCredential.user.emailVerified,
+          address: undefined,
+          socialNetworks: undefined,
+          firstname: '',
+          lastname: '',
+          website: '',
+          language: '',
+          timeZone: '',
+          communication: {
+            email: false,
+            sms: false,
+            phone: false,
+          },
+        });
+
+        // Update currentUserSubject with the new UserModel
+        this.currentUserSubject.next(userModel);
+
+        // Optionally, update local storage to keep the user logged in between page refreshes
+        // This step requires careful consideration of what you're storing for security reasons
+        // this.setAuthFromLocalStorage(...); // Adjust this according to your app's requirements
+        
+        // Assuming userCredential.user provides refreshToken and you want to simulate authToken
+        const auth = new AuthModel();
+        auth.authToken = userCredential.user.refreshToken; // Simulate authToken with refreshToken
+        auth.refreshToken = userCredential.user.refreshToken;
+        // Assuming expiresIn as a fixed future date for simplicity
+        auth.expiresIn = new Date(Date.now() + 100 * 24 * 60 * 60 * 1000);
+
+        // Store the auth details in local storage for session persistence
+        const stored = this.setAuthFromLocalStorage(auth);
+        if (!stored) {
+          throw new Error('Failed to store auth details in local storage');
+        }
+
+        // Persist auth model to localStorage or your chosen storage solution
+        this.setAuthFromLocalStorage(auth);
+
+        return userModel;
+      }),
+      catchError((error) => {
+        console.error('Login error', error);
+        return of(undefined); // Or handle the error appropriately
+      }),
+      finalize(() => this.isLoadingSubject.next(false))
+    );
+  }
+
+  logoutFirebase() {
+    // Sign out from Firebase
+    this.afAuth.signOut().then(() => {
+      // Remove user data from local storage or any other cleanup
+      localStorage.removeItem(this.authLocalStorageToken);
+      
+      // Reset the current user subject to reflect no user is logged in
+      this.currentUserSubject.next(undefined);
+  
+      // Navigate to the login page
+      this.router.navigate(['/auth/login'], {
+        queryParams: {},
+      });
+    }).catch((error) => {
+      console.error('Logout error', error);
+      // Handle any errors that occur during the logout process
+    });
+  }
+  
+  // Add a method to expose auth state
+  getAuthState(): Observable<any> {
+    return this.afAuth.authState;
+  }
+
+
 }
