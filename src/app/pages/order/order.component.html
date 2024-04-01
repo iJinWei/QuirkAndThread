@@ -1,22 +1,26 @@
+<div id="alertMessage" class="alert" role="alert"></div>
+
 <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
     <thead>
-      <tr>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Date</th>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Name</th>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Status</th>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Total Amount</th>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Action</th>
+      <tr style="margin: 1%; border-bottom: 2px solid #000;">
+        <th>Order ID</th>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Total Amount</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let order of orders$ | async" style="border-bottom: 1px solid #ccc;">
-        <td style="padding: 0 15px;">{{ (order.date.seconds * 1000) | date:'dd MMM yyyy, HH:mm:ss' }}</td>
-        <td style="padding: 0 15px;">{{order.name}}</td>
-        <td style="padding: 0 15px;">${{order.status}}</td>
-        <td style="padding: 0 15px;">{{order.totalAmount}}</td>
-        <td style="padding: 0 15px;">
-          <button style="cursor: pointer;" (click)="editOrder(order)">Edit Order</button>
-          <button style="cursor: pointer;" (click)="deleteOrder(order.id)">Delete Order</button>
+      <tr *ngFor="let order of orders$ | async" style="border-bottom: 1px solid #ccc; margin: 1%;">
+        <td><a [routerLink]="['/order', order.id]">{{ order.id }}</a></td>
+        <td>{{ (order.date.seconds * 1000) | date:'dd MMM yyyy, HH:mm:ss' }}</td>
+        <td>{{order.name}}</td>
+        <td>{{order.status}}</td>
+        <td>${{order.totalAmount}}</td>
+        <td>
+          <a [routerLink]="['/order', order.id]" type="button" class="btn btn-primary btn-sm" style="cursor: pointer; margin: 1%; ">Manage Order</a>
+          <button type="button" class="btn btn-danger btn-sm" style="cursor: pointer; margin: 1%; " (click)="deleteOrder(order.id)">Delete Order</button>
         </td>
       </tr>
     </tbody>

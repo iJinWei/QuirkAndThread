@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, query, updateDoc, where } from '@angular/fire/firestore';
+import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, docData, getDoc, query, updateDoc, where } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
+import { IOrder } from './models/order.model';
+import { IOrderItem } from './models/order-item.model';
 
 @Injectable({
   providedIn: 'root'
@@ -48,6 +51,17 @@ export class SharedService {
     return collectionData(ordersCollection, {idField:'id'});
   }
 
+  getOrderById(id: string) {
+    const docRef = doc(this.fs, 'orders', id);
+    return docData(docRef, {idField: 'id'}) as Observable<IOrder>;
+  }
+
+  getOrderItemsByOrderId(orderId: string) {
+    let ordersCollection = collection(this.fs, 'orderItems');
+    const q = query(ordersCollection, where("orderId", "==", orderId));
+    return collectionData(q, { idField: 'id' });
+  }
+
   addOrder(order: any) {
     let ordersCollection = collection(this.fs, 'orders');
     return addDoc(ordersCollection, order);
@@ -68,4 +82,33 @@ export class SharedService {
     let docRef = doc(this.fs, 'orders', id);
     return updateDoc(docRef, order);
   }
+
+  addOrderItem(orderItem: any) {
+    let orderItemsCollection = collection(this.fs, 'orderItems')
+    return addDoc(orderItemsCollection, orderItem)
+  }
+
+  updateOrderItem(id: string, orderItem: any) {
+    let docRef = doc(this.fs, 'orderItems', id);
+    return updateDoc(docRef, orderItem);
+  }
+
+  deleteOrderItem(id:string) {
+    let docRef = doc(this.fs, 'orderItems', id);
+    return deleteDoc(docRef);
+  }
+
+  getOrderItemById(id: string) {
+    const docRef = doc(this.fs, 'orderItems', id);
+    return docData(docRef, {idField: 'id'}) as Observable<IOrderItem>;
+  }
+
+  // Users Firestore Methods
+  addUser(user: any) {
+    let usersCollection = collection(this.fs, 'users');
+    return addDoc(usersCollection, user);
+  }
+
+
+
 }
