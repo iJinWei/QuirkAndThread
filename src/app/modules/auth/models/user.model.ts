@@ -13,6 +13,7 @@ export class UserModel extends AuthModel {
   occupation: string;
   companyName: string;
   phone: string;
+  emailVerified: boolean;
   address?: AddressModel;
   socialNetworks?: SocialNetworksModel;
   // personal information
@@ -60,6 +61,7 @@ export class UserModel extends AuthModel {
     this.occupation = user.occupation || '';
     this.companyName = user.companyName || '';
     this.phone = user.phone || '';
+    this.emailVerified = user.emailVerified || false;
     this.address = user.address;
     this.socialNetworks = user.socialNetworks;
   }

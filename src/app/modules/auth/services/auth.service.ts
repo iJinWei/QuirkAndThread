@@ -160,6 +160,14 @@ export class AuthService implements OnDestroy {
       })
     );
   }
+
+  sendEmailVerification(user: any) {
+    user.sendEmailVerification().then((res: any) => {
+      this.router.navigate(['/auth/verify-email']);
+    }, (error: any) => {
+      alert('Something went wrong, verification email not sent.');
+    })
+  }
   
   loginFirebase(email: string, password: string): Observable<UserModel | undefined> {
     this.isLoadingSubject.next(true);
@@ -183,6 +191,7 @@ export class AuthService implements OnDestroy {
           occupation: '',
           companyName: '',
           phone: '',
+          emailVerified: userCredential.user.emailVerified,
           address: undefined,
           socialNetworks: undefined,
           firstname: '',

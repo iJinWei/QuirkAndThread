@@ -172,7 +172,8 @@ export class RegistrationComponent implements OnInit, OnDestroy {
             // Add user data to Firestore (assumes SharedService or similar is injected as sharedService)
             this.service.addUser({ ...userData, uid: firebaseUser.uid }).then(() => {
               alert('Registration successful!');
-              this.router.navigate(['/']);
+              //this.router.navigate(['/']);
+              this.authService.sendEmailVerification(firebaseUser)
             }).catch((firestoreError: any) => {
               console.error(firestoreError);
               this.hasError = true;

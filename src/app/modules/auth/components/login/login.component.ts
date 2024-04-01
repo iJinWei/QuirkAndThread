@@ -21,6 +21,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   hasError: boolean;
   returnUrl: string;
   isLoading$: Observable<boolean>;
+  loginErrorMessage: string;
 
   // private fields
   private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
@@ -91,17 +92,24 @@ export class LoginComponent implements OnInit, OnDestroy {
   // Firebase
   submit() {
     this.hasError = false;
+    this.loginErrorMessage = '';
     const loginSubscr = this.authService
       .loginFirebase(this.f.email.value, this.f.password.value)
       .pipe(first())
       .subscribe({
         next: (user) => {
-          if (user) {
-            this.router.navigate([this.returnUrl]);
-          } else {
-            this.hasError = true;
-            alert('Login failed. Please check your email and password.');
-          }
+          alert('user.emailVerified' + user?.emailVerified);
+            if (user && user.emailVerified) {
+              this.router.navigate([this.returnUrl]);
+            }
+            else if (user && !user.emailVerified) {
+              this.hasError = true;
+              this.loginErrorMessage = 'Please verify your email before logging in.';
+            }
+            else {
+              this.hasError = true;
+              this.loginErrorMessage = 'Login failed. Please check your email and password.';
+            }
         },
         error: (err) => {
           this.hasError = true;
