@@ -1,0 +1,2 @@
+# angular.json
+angular.json -crlf -diff -merge -text -filter assume-unchanged
