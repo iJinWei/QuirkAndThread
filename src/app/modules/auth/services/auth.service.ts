@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, BehaviorSubject, of, Subscription, from } from 'rxjs';
+import { Observable, BehaviorSubject, of, Subscription, from, firstValueFrom } from 'rxjs';
 import { map, catchError, switchMap, finalize } from 'rxjs/operators';
 import { UserModel } from '../models/user.model';
 import { AuthModel } from '../models/auth.model';
@@ -7,6 +7,7 @@ import { AuthHTTPService } from './auth-http';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where } from '@angular/fire/firestore';
 
 export type UserType = UserModel | undefined;
 
@@ -23,6 +24,7 @@ export class AuthService implements OnDestroy {
   isLoading$: Observable<boolean>;
   currentUserSubject: BehaviorSubject<UserType>;
   isLoadingSubject: BehaviorSubject<boolean>;
+  private user = new BehaviorSubject<any>(null);
 
   get currentUserValue(): UserType {
     return this.currentUserSubject.value;
@@ -35,7 +37,8 @@ export class AuthService implements OnDestroy {
   constructor(
     private authHttpService: AuthHTTPService,
     private router: Router,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private fs:Firestore
   ) {
     this.isLoadingSubject = new BehaviorSubject<boolean>(false);
     this.currentUserSubject = new BehaviorSubject<UserType>(undefined);
@@ -43,6 +46,15 @@ export class AuthService implements OnDestroy {
     this.isLoading$ = this.isLoadingSubject.asObservable();
     const subscr = this.getUserByToken().subscribe();
     this.unsubscribe.push(subscr);
+    this.afAuth.authState.subscribe(user => {
+      if (user) {
+        // User is signed in.
+        this.user.next(user);
+      } else {
+        // User is signed out.
+        this.user.next(null);
+      }
+    });
   }
 
   // public methods
@@ -263,5 +275,56 @@ export class AuthService implements OnDestroy {
     return this.afAuth.authState;
   }
 
+  // Method to check if the currently logged-in user can perform an action based on their role
+  async canPerformAction(roleRequired: string): Promise<boolean> {
+    try {
+      // Convert the user Observable to a Promise to await its value
+      const user = await firstValueFrom(this.getUser());
 
+      if (!user || !user.uid) {
+        console.log('No user is currently logged in.');
+        return false;
+      }
+
+      // Now use the userHasRole method
+      return await this.userHasRole(user.uid, roleRequired);
+    } catch (error) {
+      console.error("Error checking if user can perform action:", error);
+      return false;
+    }
+  }
+
+  // Method to check if a user has a specific role
+  async userHasRole(userId: string, roleToCheck: string): Promise<boolean> {
+    try {
+     // Reference to the 'users' collection
+     const usersCollectionRef = collection(this.fs, 'users');
+     // Create a query against the collection to find the user document where the uid field matches the provided userId
+     const q = query(usersCollectionRef, where('uid', '==', userId));
+ 
+     // Execute the query
+     const querySnapshot = await getDocs(q);
+ 
+     if (!querySnapshot.empty) {
+       // Assuming a unique uid for each user, there should be only one matching document
+       const userData = querySnapshot.docs[0].data();
+
+        // Check if the 'roles' array contains the roleToCheck
+        if (userData.roles && userData.roles.includes(roleToCheck)) {
+          return true; // User has the role
+        }
+      }
+
+      return false; // User does not have the role or document does not exist
+    } catch (error) {
+      console.error("Error fetching user's roles:", error);
+      throw error; // Rethrow or handle as needed
+    }
+  }
+
+  getUser() {
+    return this.user.asObservable();
+  }
+
+  
 }

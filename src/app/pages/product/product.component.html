@@ -33,7 +33,10 @@
         </tr>
       </table>      
     <div style="text-align: center; margin-top: 20px;">
-      <button type="submit">Add Product</button>
+      <button type="submit">Save Product</button>
+    </div>
+    <div *ngIf="errorMessage" style="color: red; text-align: center; margin-top: 20px;">
+      {{errorMessage}}
     </div>
   </form>
   

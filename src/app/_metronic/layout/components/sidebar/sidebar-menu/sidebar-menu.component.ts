@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from 'src/app/modules/auth';
+import { SharedService } from 'src/app/shared.service';
 
 @Component({
   selector: 'app-sidebar-menu',
@@ -7,9 +9,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SidebarMenuComponent implements OnInit {
 
-  constructor() { }
+  constructor(private sharedService:SharedService, private authService:AuthService) { }
 
-  ngOnInit(): void {
+  isAdmin: boolean;
+
+  async ngOnInit(): Promise<void> {
+    this.isAdmin = await this.authService.canPerformAction('admin');
   }
 
 }

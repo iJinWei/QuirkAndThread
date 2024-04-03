@@ -1,8 +1,9 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ModalConfig, ModalComponent } from '../../_metronic/partials';
 import { SharedService } from 'src/app/shared.service';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
+import { AuthService } from 'src/app/modules/auth';
 
 @Component({
   selector: 'app-product',
@@ -16,14 +17,15 @@ export class ProductComponent implements OnInit {
     closeButtonLabel: 'Cancel'
   };
   @ViewChild('modal') private modalComponent: ModalComponent;
-  constructor(private service:SharedService, private fb: FormBuilder) {}
+  constructor(private service:SharedService, private fb: FormBuilder, private authService:AuthService, private cdr: ChangeDetectorRef) {}
 
   products$: Observable<any[]>;
   productForm: FormGroup;
   categories: any[] = [];
   editingProductId: string | null = null;
   selectedCategory: string | null = null;
-
+  public errorMessage: string | null = null;
+  
   refreshProducts() {
     this.applyCategoryFilter(this.selectedCategory);
   }
@@ -95,23 +97,44 @@ export class ProductComponent implements OnInit {
   }
   
   saveProduct() {
-    const productData = this.productForm.value;
-    if (this.editingProductId) {
-      this.service.updateProduct(this.editingProductId, productData).then(() => {
-        console.log('Product updated successfully');
-        this.resetForm();
-      }).catch(error => {
-        console.error('Error updating product:', error);
-      });
-    } else {
-      this.service.addProduct(productData).then(() => {
-        console.log('Product added successfully');
-        this.resetForm();
-      }).catch(error => {
-        console.error('Error adding product:', error);
-      });
-    }
+    // Clear any existing error messages at the start of the method
+    this.errorMessage = null;
+  
+    this.authService.canPerformAction('admin').then(canPerform => {
+      if (!canPerform) {
+        console.error('Unauthorized: Insufficient permissions to perform this action.');
+        this.errorMessage = 'Unauthorized: You do not have permission to perform this action.';
+        this.cdr.detectChanges(); // Manually trigger change detection
+        console.log('errorMessage: ' + this.errorMessage);
+        // Optionally, inform the user via UI by displaying this.errorMessage in your template
+        return;
+      }
+  
+      const productData = this.productForm.value;
+      if (this.editingProductId) {
+        this.service.updateProduct(this.editingProductId, productData).then(() => {
+          console.log('Product updated successfully');
+          this.resetForm();
+        }).catch(error => {
+          console.error('Error updating product:', error);
+          this.errorMessage = 'Error updating product. Please try again.';
+        });
+      } else {
+        this.service.addProduct(productData).then(() => {
+          console.log('Product added successfully');
+          this.resetForm();
+        }).catch(error => {
+          console.error('Error adding product:', error);
+          this.errorMessage = 'Error adding product. Please try again.';
+        });
+      }
+    }).catch(error => {
+      console.error('Error checking permissions:', error);
+      this.errorMessage = 'Error checking permissions. Please refresh the page or try again later.';
+    });
   }
+  
+  
 
   resetForm() {
     this.productForm.reset();

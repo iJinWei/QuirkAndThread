@@ -166,12 +166,11 @@ export class RegistrationComponent implements OnInit, OnDestroy {
               name: newUser.fullname, // Assuming UserModel has a name field
               joinDate: new Date(), // Use current date for joinDate
               lastLogin: new Date(), // Consider updating this field upon each login
-              role: "customer", // Default role
+              roles: ["customer"], // Default role
             };
   
             // Add user data to Firestore (assumes SharedService or similar is injected as sharedService)
             this.service.addUser({ ...userData, uid: firebaseUser.uid }).then(() => {
-              alert('Registration successful!');
               //this.router.navigate(['/']);
               this.authService.sendEmailVerification(firebaseUser)
             }).catch((firestoreError: any) => {

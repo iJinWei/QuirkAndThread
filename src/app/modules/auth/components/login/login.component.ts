@@ -98,7 +98,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       .pipe(first())
       .subscribe({
         next: (user) => {
-          alert('user.emailVerified' + user?.emailVerified);
             if (user && user.emailVerified) {
               this.router.navigate([this.returnUrl]);
             }
