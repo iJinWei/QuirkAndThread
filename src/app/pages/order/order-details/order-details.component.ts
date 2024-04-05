@@ -1,13 +1,14 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ModalConfig, ModalComponent } from '../../../_metronic/partials';
 import { SharedService } from 'src/app/shared.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule  } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
-import { IOrder } from 'src/app/models/order.model';
+import { ActivatedRoute, Router } from '@angular/router';
+import { IOrder } from 'src/app/modules/models/order.model';
 import { Timestamp } from 'firebase/firestore';
 import { CommonModule } from '@angular/common';
-import { IOrderItem } from 'src/app/models/order-item.model';
+import { IOrderItem } from 'src/app/modules/models/order-item.model';
+import { AuthService } from 'src/app/modules/auth';
 
 
 @Component({
@@ -24,28 +25,63 @@ export class OrderDetailsComponent implements OnInit {
     closeButtonLabel: 'Cancel'
   };
   @ViewChild('modal') private modalComponent: ModalComponent;
-  constructor(private service:SharedService, private fb: FormBuilder, private route: ActivatedRoute,) {
+  constructor(
+    private service:SharedService, 
+    private fb: FormBuilder, 
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  }
   order$: Observable<IOrder>;
   orderItems$: Observable<Array<IOrderItem>>;
   editOrderForm: FormGroup;
   orderId: string;
   editMode: boolean;
+  public errorMessage: string | null = null;
+  isLogistic: boolean = false;
+  isAdmin: boolean = false;
 
   ngOnInit() {
-    this.route.params.subscribe(params => {
-      const orderId = params['id']
-      this.order$ = this.service.getOrderById(orderId)
-      this.orderItems$ = this.service.getOrderItemsByOrderId(orderId)
-      console.log(this.order$)
-    })
+    this.authService.canPerformAction('admin').then(canPerform => {
+      if (canPerform) {
+        this.isAdmin = true;
+      }
+      this.authService.canPerformAction('logistic').then(canPerform => {
+        if (canPerform) {
+          this.isLogistic = true;
+        }
+        if (this.isAdmin || this.isLogistic) {
+          this.refreshOrderDetails()
+          this.cdr.detectChanges(); 
+          console.log("refreshOrders()")
+        } else {
+          const error = "Unauthorized: Insufficient permissions to view this page."
+          console.log(error)
+          this.showAlert(error)
+        }
+      })
+    });
+
     this.editMode = false;
     this.editOrderForm = this.fb.group({
-      // name: [''],
-      status: ['']
+      orderStatus: [''],
+      deliveryStatus: ['']
     });
+
+    this.errorMessage = null;
+
     console.log("order-details =======> ngOnInit")
+  }
+
+  refreshOrderDetails() {
+    this.route.params.subscribe(params => {
+      this.orderId = params['id']
+      this.order$ = this.service.getOrderById(this.orderId)
+      this.orderItems$ = this.service.getOrderItemsByOrderId(this.orderId)
+      console.log(this.order$)
+    })
   }
 
   parseDate(date: any) {
@@ -61,27 +97,84 @@ export class OrderDetailsComponent implements OnInit {
     this.editMode = !this.editMode;
     if (this.editMode === true) {
       this.editOrderForm.setValue({
-        status: order.status || ''
+        orderStatus: order.orderStatus || '',
+        deliveryStatus: order.deliveryStatus || ''
       })
     }
   }
 
-  // only updates the order status
   updateOrder(order: any) {
-    const orderData = this.editOrderForm.value;
-    order.status = orderData.status;
-    console.log(order)
-    this.service.updateOrder(order.id, order).then(() => {
-      console.log('Order updated successfully');
-      this.resetForm();
-      this.toggleEditMode(order)
-    }).catch(error => {
-      console.error('Error updating product:', error);
+    this.authService.canPerformAction('logistic').then(canPerform => {
+      if (canPerform) {
+        this.isLogistic = true
+        const orderData = this.editOrderForm.value;
+        order.orderStatus = orderData.orderStatus;
+        order.deliveryStatus = orderData.deliveryStatus;
+        console.log(order)
+        this.service.updateOrder(order.id, order).then(() => {
+          console.log('Order updated successfully');
+          this.resetForm();
+          this.toggleEditMode(order)
+        }).catch(error => {
+          console.error('Error updating product:', error);
+        });
+      } else {
+        this.isLogistic = false;
+        const error = 'Unauthorized: Insufficient permissions to perform this action.'
+        console.error(error);
+        this.showAlert(error)
+        this.cdr.detectChanges(); // Manually trigger change detection
+      }
     });
+
   }
 
   resetForm() {
     this.editOrderForm.reset();
   }
 
+
+  deleteOrder(id:string) {
+    this.authService.canPerformAction('logistic').then(canPerform => {
+      if (canPerform) {
+        this.isLogistic = true
+        if (confirm("Are you sure you want to delete this order?")) {
+          this.service.deleteOrder(id)
+          .then((res)=>{
+            console.log('Order deleted successfully');
+            this.router.navigate(['/order'])
+          })
+        }
+      } else {
+        this.isLogistic = false;
+        const error = 'Unauthorized: Insufficient permissions to perform this action.'
+        console.error(error);
+        this.showAlert(error)
+        this.cdr.detectChanges(); // Manually trigger change detection
+      }
+    })
+  }
+
+  back() {
+    this.router.navigate(['/order'])
+  }
+
+  
+  private showAlert(message: string) {
+    const alertElement = document.getElementById('alertMessage');
+    if (alertElement) {
+      alertElement.innerHTML = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      const closeButton = alertElement.querySelector('.btn-close');
+      if (closeButton) {
+        closeButton.addEventListener('click', () => {
+          alertElement.innerHTML = ''; // Close the alert when the close button is clicked
+        });
+      }
+    }
+  }
 }

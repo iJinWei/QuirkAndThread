@@ -1,27 +1,30 @@
 <div id="alertMessage" class="alert" role="alert"></div>
-
+<!-- CREATE BUTTON IS JUST TO CREATE ORDERS FOR TESTING PURPOSE -->
+<!-- <button class="btn btn-secondary" (click)="createOrder()">Create Order</button>  -->
 <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
-    <thead>
-      <tr style="margin: 1%; border-bottom: 2px solid #000;">
-        <th>Order ID</th>
-        <th>Date</th>
-        <th>Name</th>
-        <th>Status</th>
-        <th>Total Amount</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let order of orders$ | async" style="border-bottom: 1px solid #ccc; margin: 1%;">
-        <td><a [routerLink]="['/order', order.id]">{{ order.id }}</a></td>
-        <td>{{ (order.date.seconds * 1000) | date:'dd MMM yyyy, HH:mm:ss' }}</td>
-        <td>{{order.name}}</td>
-        <td>{{order.status}}</td>
-        <td>${{order.totalAmount}}</td>
-        <td>
-          <a [routerLink]="['/order', order.id]" type="button" class="btn btn-primary btn-sm" style="cursor: pointer; margin: 1%; ">Manage Order</a>
-          <button type="button" class="btn btn-danger btn-sm" style="cursor: pointer; margin: 1%; " (click)="deleteOrder(order.id)">Delete Order</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr style="margin: 1%; border-bottom: 2px solid #000;">
+      <th>Order ID</th>
+      <th>Date</th>
+      <th>Name</th>
+      <th>Order Status</th>
+      <th>Delivery Status</th>
+      <th>Total Amount</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let order of orders$ | async" style="border-bottom: 1px solid #ccc; margin: 1%;">
+      <td><a [routerLink]="['/order', order.id]">{{ order.id }}</a></td>
+      <td>{{ (order.date.seconds * 1000) | date:'dd MMM yyyy, HH:mm:ss' }}</td>
+      <td>{{order.name}}</td>
+      <td>{{order.orderStatus}}</td>
+      <td>{{order.deliveryStatus}}</td>
+      <td>${{order.totalAmount}}</td>
+      <td>
+        <a [routerLink]="['/order', order.id]" type="button" class="btn btn-primary btn-sm" style="cursor: pointer; margin: 1%; ">View Order</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+

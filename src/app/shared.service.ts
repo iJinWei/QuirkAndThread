@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, docData, getDoc, query, updateDoc, where } from '@angular/fire/firestore';
+import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, docData, getDoc, getDocs, query, updateDoc, where } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
-import { IOrder } from './models/order.model';
-import { IOrderItem } from './models/order-item.model';
+import { IOrder } from './modules/models/order.model';
+import { IOrderItem } from './modules/models/order-item.model';
 
 @Injectable({
   providedIn: 'root'
@@ -67,8 +67,24 @@ export class SharedService {
     return addDoc(ordersCollection, order);
   }
 
-  deleteOrder(id:string) {
+  async deleteOrder(id:string) {
     let docRef = doc(this.fs, 'orders/'+id);
+
+
+    let orderItemsCollection = collection(this.fs, 'orderItems');
+    const q = query(orderItemsCollection, where("orderId", "==", id));
+    console.log(q);
+    // Get documents based on the query
+    const querySnapshot = await getDocs(q);
+    
+    // Delete each document
+    querySnapshot.forEach(async (doc) => {
+      try {
+        await deleteDoc(doc.ref);
+      } catch (error) {
+      }
+    });
+
     return deleteDoc(docRef);
   }
 

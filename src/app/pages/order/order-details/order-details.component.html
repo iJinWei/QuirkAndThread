@@ -1,24 +1,37 @@
+<div id="alertMessage" class="alert" role="alert"></div>
 <ng-container *ngIf="order$ | async as order">
+    
     <div *ngIf="!editMode">
         <div class="card">
             <div class="card-body">
-              <h4 class="card-title">Order Details</h4>
-              <ul class="list-group">
-                  <li class="list-group-item"><strong>Order ID:</strong> {{ order.id }}</li>
-                  <li class="list-group-item"><strong>Customer Name:</strong> {{order.name}}</li>
-                  <li class="list-group-item"><strong>Date Ordered:</strong> {{ parseDate(order.date)}}</li>
-                  <li class="list-group-item"><strong>Status:</strong> {{order.status}}</li>
-                  <li class="list-group-item"><strong>Total Amount:</strong> ${{order.totalAmount}}</li>
-              </ul>
-              <br>
-              <button class="btn btn-primary" (click)="toggleEditMode(order)">Update Order Status</button>
+                <h4 class="card-title">Order Details</h4>
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Order ID:</strong> {{ order.id }}</li>
+                    <li class="list-group-item"><strong>Customer Name:</strong> {{order.name}}</li>
+                    <li class="list-group-item"><strong>Date Ordered:</strong> {{ parseDate(order.date)}}</li>
+                    <li class="list-group-item"><strong>Order Status:</strong> {{order.orderStatus}}</li>
+                    <li class="list-group-item"><strong>Delivery Status:</strong> {{order.deliveryStatus}}</li>
+                    <li class="list-group-item"><strong>Total Amount:</strong> ${{order.totalAmount}}</li>
+                </ul>
+                <br>
+                <div *ngIf="isLogistic" style="margin-top: 1%;">
+                    <button class="btn btn-primary btn-sm" (click)="toggleEditMode(order)">Update Order Status</button>
+                    &nbsp;
+                    <button class="btn btn-danger btn-sm " (click)="deleteOrder(orderId)">Delete Order</button>
+                    &nbsp;
+                    <button class="btn btn-secondary btn-sm" (click)="back()">Back</button>
+                </div>
+                <div *ngIf="!isLogistic" style="margin-top: 1%;">
+                    <button class="btn btn-secondary btn-sm" (click)="back()">Back</button>
+                </div>
+              
             </div>
           </div>
     </div>
     <div *ngIf="editMode">
         <div class="card">
             <div class="card-body">
-              <h4 class="card-title">Update Order Status</h4>
+              <h4 class="card-title">Update Order Details</h4>
               
               <form [formGroup]="editOrderForm" (ngSubmit)="updateOrder(order)">
                 <ul class="list-group">
@@ -32,12 +45,23 @@
                         <strong>Date Ordered:</strong> {{ parseDate(order.date)}}
                     </li>
                     <li class="list-group-item">
-                        <label for="status"><strong>Status: </strong></label>
-                        <select id="status" formControlName="status">
+                        <label for="status"><strong>Order Status: </strong></label>
+                        &nbsp;
+                        <select id="status" formControlName="orderStatus">
                             <option value="">Select a status</option>
                             <option value="Processing">Processing</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Returned">Returned</option>
+                        </select>
+                    </li>
+                    <li class="list-group-item">
+                        <label for="status"><strong>Delivery Status: </strong></label>
+                        &nbsp;
+                        <select id="status" formControlName="deliveryStatus">
+                            <option value="">Select a status</option>
                             <option value="Preparing to be shipped">Preparing to be shipped</option>
                             <option value="Shipped">Shipped</option>
+                            <option value="Out for Delivery">Out for Delivery</option>
                             <option value="Delivered">Delivered</option>
                         </select>
                     </li>
@@ -78,10 +102,10 @@
                     </tr>
                 </tbody>
             </table>
+            
         </div>
 
     
-    </div>
+    </div>    
+</ng-container>    
 
-    
-</ng-container>
