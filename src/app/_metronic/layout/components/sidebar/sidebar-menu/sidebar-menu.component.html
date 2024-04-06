@@ -88,7 +88,7 @@
     </div>
 
     <!-- Orders Management -->
-    <div class="menu-item">
+    <div *ngIf="isAdmin||isLogistic" class="menu-item">
       <a
         class="menu-link without-sub"
         routerLink="/order"

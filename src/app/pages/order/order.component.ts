@@ -33,26 +33,7 @@ export class OrderComponent implements OnInit {
 
   ngOnInit() {
     this.errorMessage = null;
-    this.authService.canPerformAction('admin').then(canPerform => {
-      if (canPerform) {
-        this.isAdmin = true;
-      }
-      this.authService.canPerformAction('logistic').then(canPerform => {
-        if (canPerform) {
-          this.isLogistic = true;
-        }
-        if (this.isAdmin || this.isLogistic) {
-          this.refreshOrders()
-          
-          this.cdr.detectChanges(); 
-          console.log("refreshOrders()")
-        } else {
-          const error = "Unauthorized: Insufficient permissions to view this page."
-          console.log(error)
-          this.showAlert(error)
-        }
-      })
-    });
+    this.refreshOrders();
   }
 
   refreshOrders() {
@@ -91,7 +72,7 @@ export class OrderComponent implements OnInit {
     this.service.addOrder(order).then((res) => {
       const newOrderId = res.id
       let orderItem1 = {
-        "productId": "FZvCwBzz96U5J6ZZkOBO",
+        "productId": "vzI2ZrBAKjw8cZLPIaiH",
         "orderId": newOrderId,
         "price": "25",
         "quantity": "2",

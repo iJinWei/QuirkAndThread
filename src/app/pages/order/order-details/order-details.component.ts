@@ -1,7 +1,7 @@
 import { Component, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ModalConfig, ModalComponent } from '../../../_metronic/partials';
 import { SharedService } from 'src/app/shared.service';
-import { FormBuilder, FormGroup, ReactiveFormsModule  } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators  } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IOrder } from 'src/app/modules/models/order.model';
@@ -55,19 +55,23 @@ export class OrderDetailsComponent implements OnInit {
         if (this.isAdmin || this.isLogistic) {
           this.refreshOrderDetails()
           this.cdr.detectChanges(); 
-          console.log("refreshOrders()")
+          console.log("Load Order Details page")
         } else {
-          const error = "Unauthorized: Insufficient permissions to view this page."
-          console.log(error)
-          this.showAlert(error)
+          this.displayErrorAlert('Unauthorized: Insufficient permissions to view this page.');
         }
+      }).catch(error => {
+        console.error('Error checking permissions:', error);
+        this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
       })
+    }).catch(error => {
+      console.error('Error checking permissions:', error);
+      this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
     });
 
     this.editMode = false;
     this.editOrderForm = this.fb.group({
-      orderStatus: [''],
-      deliveryStatus: ['']
+      orderStatus: ['', Validators.required],
+      deliveryStatus: ['', Validators.required]
     });
 
     this.errorMessage = null;
@@ -106,25 +110,29 @@ export class OrderDetailsComponent implements OnInit {
   updateOrder(order: any) {
     this.authService.canPerformAction('logistic').then(canPerform => {
       if (canPerform) {
-        this.isLogistic = true
-        const orderData = this.editOrderForm.value;
-        order.orderStatus = orderData.orderStatus;
-        order.deliveryStatus = orderData.deliveryStatus;
-        console.log(order)
-        this.service.updateOrder(order.id, order).then(() => {
-          console.log('Order updated successfully');
-          this.resetForm();
-          this.toggleEditMode(order)
-        }).catch(error => {
-          console.error('Error updating product:', error);
-        });
+        if (this.editOrderForm.valid) {
+          this.isLogistic = true
+          const orderData = this.editOrderForm.value;
+          order.orderStatus = orderData.orderStatus;
+          order.deliveryStatus = orderData.deliveryStatus;
+          console.log(order)
+          this.service.updateOrder(order.id, order).then(() => {
+            console.log('Order updated successfully');
+            this.resetForm();
+            this.toggleEditMode(order)
+          }).catch(error => {
+            console.error('Error updating order:', error);
+            this.displayErrorAlert('Error in updating order. Please try again later.');
+          });
+        }
+
       } else {
         this.isLogistic = false;
-        const error = 'Unauthorized: Insufficient permissions to perform this action.'
-        console.error(error);
-        this.showAlert(error)
-        this.cdr.detectChanges(); // Manually trigger change detection
+        this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
       }
+    }).catch(error => {
+      console.error('Error checking permissions:', error);
+      this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
     });
 
   }
@@ -144,20 +152,26 @@ export class OrderDetailsComponent implements OnInit {
             console.log('Order deleted successfully');
             this.router.navigate(['/order'])
           })
+          .catch(error => {
+            console.error('Error in deleting order:', error);
+            this.displayErrorAlert('Error in deleting order. Please try again later.');
+          })
         }
       } else {
         this.isLogistic = false;
-        const error = 'Unauthorized: Insufficient permissions to perform this action.'
-        console.error(error);
-        this.showAlert(error)
-        this.cdr.detectChanges(); // Manually trigger change detection
+        this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
       }
-    })
+    }).catch(error => {
+      console.error('Error checking permissions:', error);
+      this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
+    });
   }
+  
 
   back() {
     this.router.navigate(['/order'])
   }
+
 
   
   private showAlert(message: string) {
@@ -176,5 +190,11 @@ export class OrderDetailsComponent implements OnInit {
         });
       }
     }
+  }
+
+  private displayErrorAlert(message: string) {
+    this.showAlert(message);
+    this.cdr.detectChanges(); 
+    console.log('errorMessage: ' + message);
   }
 }

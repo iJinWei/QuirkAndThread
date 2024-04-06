@@ -45,32 +45,38 @@
                         <strong>Date Ordered:</strong> {{ parseDate(order.date)}}
                     </li>
                     <li class="list-group-item">
-                        <label for="status"><strong>Order Status: </strong></label>
+                        <label for="orderStatus"><strong>Order Status: </strong></label>
                         &nbsp;
-                        <select id="status" formControlName="orderStatus">
+                        <select id="orderStatus" formControlName="orderStatus">
                             <option value="">Select a status</option>
                             <option value="Processing">Processing</option>
                             <option value="Completed">Completed</option>
                             <option value="Returned">Returned</option>
                         </select>
+                        <div *ngIf="editOrderForm.get('orderStatus')?.invalid && (editOrderForm.get('orderStatus')?.dirty || editOrderForm.get('orderStatus')?.touched)" class="text-danger">
+                            <div *ngIf="editOrderForm.get('orderStatus')?.errors?.required">Please select a status.</div>
+                        </div>
                     </li>
                     <li class="list-group-item">
-                        <label for="status"><strong>Delivery Status: </strong></label>
+                        <label for="deliveryStatus"><strong>Delivery Status: </strong></label>
                         &nbsp;
-                        <select id="status" formControlName="deliveryStatus">
+                        <select id="deliveryStatus" formControlName="deliveryStatus">
                             <option value="">Select a status</option>
                             <option value="Preparing to be shipped">Preparing to be shipped</option>
                             <option value="Shipped">Shipped</option>
                             <option value="Out for Delivery">Out for Delivery</option>
                             <option value="Delivered">Delivered</option>
                         </select>
+                        <div *ngIf="editOrderForm.get('deliveryStatus')?.invalid && (editOrderForm.get('deliveryStatus')?.dirty || editOrderForm.get('deliveryStatus')?.touched)" class="text-danger">
+                            <div *ngIf="editOrderForm.get('deliveryStatus')?.errors?.required">Please select a status.</div>
+                        </div>
                     </li>
                     <li class="list-group-item">
                         <strong>Total Amount:</strong> ${{order.totalAmount}}
                     </li>
                 </ul>
                 <div style="margin-top: 1%;">
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="!editOrderForm.valid">Save</button>
                     &nbsp;
                     <button type="button" class="btn btn-secondary" (click)="toggleEditMode(order)">Cancel</button>
                 </div>
