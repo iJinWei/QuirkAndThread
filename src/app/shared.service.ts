@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, docData, getDoc, getDocs, query, updateDoc, where } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { IOrder } from './modules/models/order.model';
 import { IOrderItem } from './modules/models/order-item.model';
+import { IUser, User } from './modules/models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -51,6 +52,13 @@ export class SharedService {
     return collectionData(ordersCollection, {idField:'id'});
   }
 
+  
+  getOrdersByDeliveryPersonId(deliveryPersonId: string) {
+    let ordersCollection = collection(this.fs, 'orders');
+    const q = query(ordersCollection, where("deliveryPersonnelId", "==", deliveryPersonId))
+    return collectionData(q, { idField: 'id' });
+  }
+
   getOrderById(id: string) {
     const docRef = doc(this.fs, 'orders', id);
     return docData(docRef, {idField: 'id'}) as Observable<IOrder>;
@@ -88,12 +96,6 @@ export class SharedService {
     return deleteDoc(docRef);
   }
 
-  getProductsByName(name: string) {
-    let productsCollection = collection(this.fs, 'orders');
-    const q = query(productsCollection, where("name", "==", name));
-    return collectionData(q, { idField: 'id' });
-  }
-
   updateOrder(id: string, order: any) {
     let docRef = doc(this.fs, 'orders', id);
     return updateDoc(docRef, order);
@@ -119,12 +121,32 @@ export class SharedService {
     return docData(docRef, {idField: 'id'}) as Observable<IOrderItem>;
   }
 
+  getAllDeliveryPersonnel() {
+    let usersCollection = collection(this.fs, 'users');
+    const queryConstraints = []
+    queryConstraints.push(where('roles', 'array-contains', 'logistic'))
+    queryConstraints.push(where('name', '!=', 'superuser'))
+    const q = query(usersCollection, ...queryConstraints)
+    // let q = query(usersCollection, where('roles', 'array-contains', 'logistic'))
+    return collectionData(q, { idField: 'id' });
+  }
+
+  // method to get single field from observable
+  getField(data$: Observable<any>, fieldName: string): Observable<any> {
+    return data$.pipe(
+      map(data => data[fieldName])
+    );
+  }
+
   // Users Firestore Methods
   addUser(user: any) {
     let usersCollection = collection(this.fs, 'users');
     return addDoc(usersCollection, user);
   }
 
-
+  getUserById(id: string) {
+    const docRef = doc(this.fs, 'users', id);
+    return docData(docRef) as Observable<IUser>;
+  }
 
 }

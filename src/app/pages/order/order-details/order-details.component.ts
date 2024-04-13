@@ -5,10 +5,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators  } from '@angul
 import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IOrder } from 'src/app/modules/models/order.model';
-import { Timestamp } from 'firebase/firestore';
 import { CommonModule } from '@angular/common';
 import { IOrderItem } from 'src/app/modules/models/order-item.model';
 import { AuthService } from 'src/app/modules/auth';
+import { User, IUser } from 'src/app/modules/models/user.model';
 
 
 @Component({
@@ -39,9 +39,16 @@ export class OrderDetailsComponent implements OnInit {
   editOrderForm: FormGroup;
   orderId: string;
   editMode: boolean;
-  public errorMessage: string | null = null;
   isLogistic: boolean = false;
   isAdmin: boolean = false;
+  orderAssignedToThisLogistic: boolean = false;
+  userId: string;
+  
+  // For loading list of delivery users
+  deliveryUsers: any[] = [];
+
+  // For using this order's delivery person details
+  deliveryPersonForThisOrder$: Observable<IUser>;
 
   ngOnInit() {
     this.authService.canPerformAction('admin').then(canPerform => {
@@ -54,6 +61,7 @@ export class OrderDetailsComponent implements OnInit {
         }
         if (this.isAdmin || this.isLogistic) {
           this.refreshOrderDetails()
+          this.loadDeliveryPersonnel();
           this.cdr.detectChanges(); 
           console.log("Load Order Details page")
         } else {
@@ -71,10 +79,11 @@ export class OrderDetailsComponent implements OnInit {
     this.editMode = false;
     this.editOrderForm = this.fb.group({
       orderStatus: ['', Validators.required],
+      deliveryPersonnel: ['', Validators.required],
       deliveryStatus: ['', Validators.required]
     });
 
-    this.errorMessage = null;
+    
 
     console.log("order-details =======> ngOnInit")
   }
@@ -82,11 +91,40 @@ export class OrderDetailsComponent implements OnInit {
   refreshOrderDetails() {
     this.route.params.subscribe(params => {
       this.orderId = params['id']
+      console.log("refresHOrderDetails:")
+      
+      // Getting order details
       this.order$ = this.service.getOrderById(this.orderId)
+      
+      // Getting this user id
+      this.authService.getUser().subscribe((user) => {
+        this.userId = user.uid
+        console.log(this.userId)
+        // Getting this order's delivery person details: name
+        this.service.getField(this.order$, 'deliveryPersonnelId').subscribe((res) => {
+          if (res) {
+            if (this.isAdmin || (this.isLogistic && this.userId ==  res)) {
+              this.orderAssignedToThisLogistic = true;
+              this.deliveryPersonForThisOrder$ = this.service.getUserById(res)
+            }
+          }
+        })
+      })
+
+      // Getting all the order items for this order
       this.orderItems$ = this.service.getOrderItemsByOrderId(this.orderId)
-      console.log(this.order$)
+
+
     })
   }
+
+  
+  loadDeliveryPersonnel() {
+    this.service.getAllDeliveryPersonnel().subscribe((res) => {
+      this.deliveryUsers = res;
+    });
+  }
+
 
   parseDate(date: any) {
     if (date !== undefined) {
@@ -97,11 +135,13 @@ export class OrderDetailsComponent implements OnInit {
     
   }
 
+
   toggleEditMode(order: any): void {
     this.editMode = !this.editMode;
     if (this.editMode === true) {
       this.editOrderForm.setValue({
         orderStatus: order.orderStatus || '',
+        deliveryPersonnel: order.deliveryPersonnelId || '',
         deliveryStatus: order.deliveryStatus || ''
       })
     }
@@ -113,6 +153,7 @@ export class OrderDetailsComponent implements OnInit {
         if (this.editOrderForm.valid) {
           this.isLogistic = true
           const orderData = this.editOrderForm.value;
+          order.deliveryPersonnelId = orderData.deliveryPersonnel;
           order.orderStatus = orderData.orderStatus;
           order.deliveryStatus = orderData.deliveryStatus;
           console.log(order)

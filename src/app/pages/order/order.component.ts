@@ -27,18 +27,59 @@ export class OrderComponent implements OnInit {
   ) {}
 
   orders$: Observable<any[]>;
-  public errorMessage: string | null = null;
   isLogistic: boolean = false;
   isAdmin: boolean = false;
 
   ngOnInit() {
-    this.errorMessage = null;
-    this.refreshOrders();
+
+    // check roles
+    this.authService.canPerformAction('admin').then(canPerform => {
+      if (canPerform) {
+        this.isAdmin = true;
+      }
+      this.authService.canPerformAction('logistic').then(canPerform => {
+        if (canPerform) {
+          this.isLogistic = true;
+        }
+
+        if (this.isAdmin) {
+          // if admin role, retrieve all orders
+          this.refreshOrdersForAdmin();
+          this.cdr.detectChanges(); 
+          console.log("Load Orders page")
+        } else if (this.isLogistic) {
+          // if logistic role, retrieve all orders assigned to this logistic user
+          this.authService.getUser().subscribe((res) => {
+            // using user id, instead of uid
+            const userId = res.uid;
+            console.log(userId)
+            this.refreshOrdersForAdmin();
+            // this.refreshOrdersForLogistic(userId)
+            this.cdr.detectChanges();
+            console.log("Load Orders page")
+          })
+        } else {
+          this.displayErrorAlert('Unauthorized: Insufficient permissions to view this page.');
+        }
+      }).catch(error => {
+        console.error('Error checking permissions:', error);
+        this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
+      })
+    }).catch(error => {
+      console.error('Error checking permissions:', error);
+      this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
+    });
   }
 
-  refreshOrders() {
+  refreshOrdersForAdmin() {
     this.orders$ = this.service.getOrders();
     console.log("retrieving all orders")
+  }
+
+  refreshOrdersForLogistic(userId: string) {
+    this.orders$ = this.service.getOrdersByDeliveryPersonId(userId);
+    console.log("retrieving all orders for logistic user")
+
   }
 
   private showAlert(message: string) {
@@ -57,6 +98,12 @@ export class OrderComponent implements OnInit {
         });
       }
     }
+  }
+
+  private displayErrorAlert(message: string) {
+    this.showAlert(message);
+    this.cdr.detectChanges(); 
+    console.log('errorMessage: ' + message);
   }
   
   // for testing only.
