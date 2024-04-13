@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, docData, getDoc, getDocs, query, updateDoc, where } from '@angular/fire/firestore';
+import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, docData, getDoc, getDocs, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
 import { IOrder } from './modules/models/order.model';
 import { IOrderItem } from './modules/models/order-item.model';
@@ -139,9 +139,10 @@ export class SharedService {
   }
 
   // Users Firestore Methods
-  addUser(user: any) {
+  addUser(uid: string, userData: any) {
     let usersCollection = collection(this.fs, 'users');
-    return addDoc(usersCollection, user);
+    let userDocRef = doc(usersCollection, uid); // Create a document reference with the UID
+    return setDoc(userDocRef, { ...userData, uid }); // Include the uid in the userData
   }
 
   getUserById(id: string) {
