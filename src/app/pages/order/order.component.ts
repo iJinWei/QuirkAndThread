@@ -53,8 +53,8 @@ export class OrderComponent implements OnInit {
             // using user id, instead of uid
             const userId = res.uid;
             console.log(userId)
-            this.refreshOrdersForAdmin();
-            // this.refreshOrdersForLogistic(userId)
+            // this.refreshOrdersForAdmin();
+            this.refreshOrdersForLogistic(userId)
             this.cdr.detectChanges();
             console.log("Load Orders page")
           })
@@ -114,7 +114,8 @@ export class OrderComponent implements OnInit {
       "orderStatus": "Processing",
       "deliveryStatus": "Shipped",
       "totalAmount": "100",
-      "userId": "d6jCHdfYFzz8ltiI0VbP"
+      "userId": "d6jCHdfYFzz8ltiI0VbP",
+      "deliveryPersonnelId": "DIp2hTTwFkToW8S7F3UX1rtrht73"
     }
     this.service.addOrder(order).then((res) => {
       const newOrderId = res.id

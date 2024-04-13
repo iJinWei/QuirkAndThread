@@ -9,7 +9,6 @@
         <tr style="margin: 1%; border-bottom: 2px solid #000;">
           <th>Order ID</th>
           <th>Date</th>
-          <th>Name</th>
           <th>Order Status</th>
           <th>Delivery Status</th>
           <th>Total Amount</th>
@@ -21,7 +20,6 @@
         <tr *ngFor="let order of orders" style="border-bottom: 1px solid #ccc; margin: 1%;">
           <td><a [routerLink]="['/order', order.id]">{{ order.id }}</a></td>
           <td>{{ (order.date.seconds * 1000) | date:'dd MMM yyyy, HH:mm:ss' }}</td>
-          <td>{{order.name}}</td>
           <td>{{order.orderStatus}}</td>
           <td>{{order.deliveryStatus}}</td>
           <td>${{order.totalAmount}}</td>
@@ -30,23 +28,14 @@
           </td>
         </tr>
       </tbody>
-
-        <!-- <tr *ngFor="let order of orders$ | async" style="border-bottom: 1px solid #ccc; margin: 1%;">
-          <td><a [routerLink]="['/order', order.id]">{{ order.id }}</a></td>
-          <td>{{ (order.date.seconds * 1000) | date:'dd MMM yyyy, HH:mm:ss' }}</td>
-          <td>{{order.name}}</td>
-          <td>{{order.orderStatus}}</td>
-          <td>{{order.deliveryStatus}}</td>
-          <td>${{order.totalAmount}}</td>
-          <td>
-            <a [routerLink]="['/order', order.id]" type="button" class="btn btn-primary btn-sm" style="cursor: pointer; margin: 1%; ">View Order</a>
-          </td>
-        </tr> -->
-
     </table>
 
 </ng-container>
 </div>
-<ng-template #noResultsMessage #loadingTemplate>
+<ng-template #noResultsMessage >
   <h5>No orders found.</h5>
+</ng-template>
+
+<ng-template #loadingTemplate>
+  <h5>Loading...</h5>
 </ng-template>

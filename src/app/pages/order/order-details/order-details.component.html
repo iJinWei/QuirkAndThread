@@ -18,17 +18,13 @@
                     <li class="list-group-item"><strong>Total Amount:</strong> ${{order.totalAmount}}</li>
                 </ul>
                 <br>
-                <div *ngIf="isAdmin || orderAssignedToThisLogistic " style="margin-top: 1%;">
-                    <button class="btn btn-primary btn-sm" (click)="toggleEditMode(order)">Update Order</button>
+                <div style="margin-top: 1%;">
+                    <button *ngIf="isAdmin || orderAssignedToThisLogistic" class="btn btn-primary btn-sm" (click)="toggleEditMode(order)">Update Order</button>
                     &nbsp;
                     <button *ngIf="isAdmin" class="btn btn-danger btn-sm " (click)="deleteOrder(orderId)">Delete Order</button>
                     &nbsp;
-                    <button class="btn btn-secondary btn-sm" (click)="back()">Back</button>
-                </div>
-                <div *ngIf="!isLogistic" style="margin-top: 1%;">
-                    <button class="btn btn-secondary btn-sm" (click)="back()">Back</button>
-                </div>
-              
+                    <button *ngIf="isAdmin || orderAssignedToThisLogistic" class="btn btn-secondary btn-sm" (click)="back()">Back</button>
+                </div>             
             </div>
           </div>
     </div>
@@ -53,9 +49,7 @@
                         &nbsp;
                         <select id="orderStatus" formControlName="orderStatus">
                             <option value="">Select a status</option>
-                            <option value="Processing">Processing</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Returned">Returned</option>
+                            <option *ngFor="let status of orderStatuses" [value]="status.name">{{status.name}}</option>
                         </select>
                         <div *ngIf="editOrderForm.get('orderStatus')?.invalid && (editOrderForm.get('orderStatus')?.dirty || editOrderForm.get('orderStatus')?.touched)" class="text-danger">
                             <div *ngIf="editOrderForm.get('orderStatus')?.errors?.required">Please select a status.</div>
@@ -77,11 +71,7 @@
                         &nbsp;
                         <select id="deliveryStatus" formControlName="deliveryStatus">
                             <option value="">Select a status</option>
-                            <option value="Unassigned">Unassigned</option>
-                            <option value="Preparing to be shipped">Preparing to be shipped</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Out for Delivery">Out for Delivery</option>
-                            <option value="Delivered">Delivered</option>
+                            <option *ngFor="let status of deliveryStatuses" [value]="status.name">{{status.name}}</option>
                         </select>
                         <div *ngIf="editOrderForm.get('deliveryStatus')?.invalid && (editOrderForm.get('deliveryStatus')?.dirty || editOrderForm.get('deliveryStatus')?.touched)" class="text-danger">
                             <div *ngIf="editOrderForm.get('deliveryStatus')?.errors?.required">Please select a status.</div>

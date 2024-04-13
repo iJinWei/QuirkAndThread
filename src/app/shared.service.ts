@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, docData, getDoc, getDocs, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
-import { Observable, map } from 'rxjs';
+import { Firestore, addDoc, collection, collectionData, deleteDoc, doc, docData, getDocs, orderBy, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
+import { Observable, catchError, map } from 'rxjs';
 import { IOrder } from './modules/models/order.model';
 import { IOrderItem } from './modules/models/order-item.model';
 import { IUser, User } from './modules/models/user.model';
@@ -49,13 +49,14 @@ export class SharedService {
   // Orders Firestore Methods
   getOrders() {
     let ordersCollection = collection(this.fs, 'orders');
-    return collectionData(ordersCollection, {idField:'id'});
+    const q = query(ordersCollection, orderBy('date'));
+    return collectionData(q, {idField:'id'});
   }
 
   
   getOrdersByDeliveryPersonId(deliveryPersonId: string) {
     let ordersCollection = collection(this.fs, 'orders');
-    const q = query(ordersCollection, where("deliveryPersonnelId", "==", deliveryPersonId))
+    const q = query(ordersCollection, where("deliveryPersonnelId", "==", deliveryPersonId), orderBy("date"))
     return collectionData(q, { idField: 'id' });
   }
 
@@ -77,11 +78,9 @@ export class SharedService {
 
   async deleteOrder(id:string) {
     let docRef = doc(this.fs, 'orders/'+id);
-
-
     let orderItemsCollection = collection(this.fs, 'orderItems');
     const q = query(orderItemsCollection, where("orderId", "==", id));
-    console.log(q);
+
     // Get documents based on the query
     const querySnapshot = await getDocs(q);
     
@@ -92,7 +91,7 @@ export class SharedService {
       } catch (error) {
       }
     });
-
+    console.log("deleteOrder ==> complete")
     return deleteDoc(docRef);
   }
 
@@ -121,6 +120,7 @@ export class SharedService {
     return docData(docRef, {idField: 'id'}) as Observable<IOrderItem>;
   }
 
+  // get all delivery personnel that is not superuser and has 'logistic' role
   getAllDeliveryPersonnel() {
     let usersCollection = collection(this.fs, 'users');
     const queryConstraints = []
@@ -131,10 +131,24 @@ export class SharedService {
     return collectionData(q, { idField: 'id' });
   }
 
+  getOrderStatuses() {
+    let orderStatusCollection = collection(this.fs, 'orderStatus');
+    return collectionData(orderStatusCollection, {idField:'id'});
+  }
+
+  getDeliveryStatuses() {
+    let deliveryStatusCollection = collection(this.fs, 'deliveryStatus');
+    return collectionData(deliveryStatusCollection, {idField:'id'});
+  }
+
   // method to get single field from observable
   getField(data$: Observable<any>, fieldName: string): Observable<any> {
     return data$.pipe(
-      map(data => data[fieldName])
+      map(data => data[fieldName]),
+      catchError(error => {
+        // console.error('Error: ', error);
+        return '';
+      })
     );
   }
 
