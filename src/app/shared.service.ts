@@ -91,7 +91,6 @@ export class SharedService {
       } catch (error) {
       }
     });
-    console.log("deleteOrder ==> complete")
     return deleteDoc(docRef);
   }
 

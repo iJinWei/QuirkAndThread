@@ -52,7 +52,6 @@ export class OrderComponent implements OnInit {
           this.authService.getUser().subscribe((res) => {
             // using user id, instead of uid
             const userId = res.uid;
-            console.log(userId)
             // this.refreshOrdersForAdmin();
             this.refreshOrdersForLogistic(userId)
             this.cdr.detectChanges();

@@ -89,16 +89,12 @@ export class OrderDetailsComponent implements OnInit {
       deliveryPersonnel: ['', Validators.required],
       deliveryStatus: ['', Validators.required]
     });
-
-    
-
-    console.log("order-details =======> ngOnInit")
   }
 
   refreshOrderDetails() {
     this.route.params.subscribe(params => {
       this.orderId = params['id']
-      console.log("refresHOrderDetails:")
+      console.log("Refreshing order details")
       
       // Getting order details
       this.order$ = this.service.getOrderById(this.orderId)
@@ -109,7 +105,6 @@ export class OrderDetailsComponent implements OnInit {
       // Getting this user id
       this.authService.getUser().subscribe((user) => {
         this.userId = user.uid
-        console.log(this.userId)
         // Getting this order's delivery person details: name
         try {
           this.service.getField(this.order$, 'deliveryPersonnelId').subscribe((res) => {
@@ -180,7 +175,7 @@ export class OrderDetailsComponent implements OnInit {
         order.deliveryPersonnelId = orderData.deliveryPersonnel;
         order.orderStatus = orderData.orderStatus;
         order.deliveryStatus = orderData.deliveryStatus;
-        console.log(order)
+
         this.service.updateOrder(order.id, order).then(() => {
           console.log('Order updated successfully');
           this.resetForm();
