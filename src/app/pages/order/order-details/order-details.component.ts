@@ -5,10 +5,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators  } from '@angul
 import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IOrder } from 'src/app/modules/models/order.model';
-import { Timestamp } from 'firebase/firestore';
 import { CommonModule } from '@angular/common';
 import { IOrderItem } from 'src/app/modules/models/order-item.model';
 import { AuthService } from 'src/app/modules/auth';
+import { User, IUser } from 'src/app/modules/models/user.model';
 
 
 @Component({
@@ -39,9 +39,19 @@ export class OrderDetailsComponent implements OnInit {
   editOrderForm: FormGroup;
   orderId: string;
   editMode: boolean;
-  public errorMessage: string | null = null;
   isLogistic: boolean = false;
   isAdmin: boolean = false;
+  orderAssignedToThisLogistic: boolean = false;
+  userId: string;
+
+  orderStatuses: any[] = [];
+  deliveryStatuses: any[] = [];
+  
+  // For loading list of delivery users
+  deliveryUsers: any[] = [];
+
+  // For using this order's delivery person details
+  deliveryPersonForThisOrder$: Observable<IUser>;
 
   ngOnInit() {
     this.authService.canPerformAction('admin').then(canPerform => {
@@ -53,7 +63,12 @@ export class OrderDetailsComponent implements OnInit {
           this.isLogistic = true;
         }
         if (this.isAdmin || this.isLogistic) {
-          this.refreshOrderDetails()
+          this.refreshOrderDetails();
+
+          this.loadDeliveryPersonnel();
+          this.loadOrderStatuses();
+          this.loadDeliveryStatuses();
+
           this.cdr.detectChanges(); 
           console.log("Load Order Details page")
         } else {
@@ -71,22 +86,63 @@ export class OrderDetailsComponent implements OnInit {
     this.editMode = false;
     this.editOrderForm = this.fb.group({
       orderStatus: ['', Validators.required],
+      deliveryPersonnel: ['', Validators.required],
       deliveryStatus: ['', Validators.required]
     });
-
-    this.errorMessage = null;
-
-    console.log("order-details =======> ngOnInit")
   }
 
   refreshOrderDetails() {
     this.route.params.subscribe(params => {
       this.orderId = params['id']
+      console.log("Refreshing order details")
+      
+      // Getting order details
       this.order$ = this.service.getOrderById(this.orderId)
+
+      // Getting all the order items for this order
       this.orderItems$ = this.service.getOrderItemsByOrderId(this.orderId)
-      console.log(this.order$)
+      
+      // Getting this user id
+      this.authService.getUser().subscribe((user) => {
+        this.userId = user.uid
+        // Getting this order's delivery person details: name
+        try {
+          this.service.getField(this.order$, 'deliveryPersonnelId').subscribe((res) => {
+            if (res) {
+              if (this.isAdmin || (this.isLogistic && this.userId ==  res)) {
+                this.orderAssignedToThisLogistic = true;
+                this.deliveryPersonForThisOrder$ = this.service.getUserById(res)
+              }
+            }
+          })
+        } catch(err) {
+          console.error("Encountered error when loading order details: " + err)
+          this.displayErrorAlert('Encountered error when loading order details. Please try again later');
+        }
+
+      })
     })
   }
+
+  
+  loadDeliveryPersonnel() {
+    this.service.getAllDeliveryPersonnel().subscribe((res) => {
+      this.deliveryUsers = res;
+    });
+  }
+
+  loadOrderStatuses() {
+    this.service.getOrderStatuses().subscribe((res) => {
+      this.orderStatuses = res;
+    })
+  }
+
+  loadDeliveryStatuses() {
+    this.service.getDeliveryStatuses().subscribe((res) => {
+      this.deliveryStatuses = res;
+    })
+  }
+
 
   parseDate(date: any) {
     if (date !== undefined) {
@@ -97,43 +153,44 @@ export class OrderDetailsComponent implements OnInit {
     
   }
 
+
   toggleEditMode(order: any): void {
     this.editMode = !this.editMode;
     if (this.editMode === true) {
       this.editOrderForm.setValue({
         orderStatus: order.orderStatus || '',
+        deliveryPersonnel: order.deliveryPersonnelId || '',
         deliveryStatus: order.deliveryStatus || ''
       })
     }
   }
 
-  updateOrder(order: any) {
-    this.authService.canPerformAction('logistic').then(canPerform => {
-      if (canPerform) {
-        if (this.editOrderForm.valid) {
-          this.isLogistic = true
-          const orderData = this.editOrderForm.value;
-          order.orderStatus = orderData.orderStatus;
-          order.deliveryStatus = orderData.deliveryStatus;
-          console.log(order)
-          this.service.updateOrder(order.id, order).then(() => {
-            console.log('Order updated successfully');
-            this.resetForm();
-            this.toggleEditMode(order)
-          }).catch(error => {
-            console.error('Error updating order:', error);
-            this.displayErrorAlert('Error in updating order. Please try again later.');
-          });
-        }
+  async updateOrder(order: any) {
+    this.isAdmin = await this.authService.canPerformAction('admin')
+    this.isLogistic = await this.authService.canPerformAction('logistic')
 
+    if (this.isAdmin || (this.isLogistic && this.orderAssignedToThisLogistic)) {
+      if (this.editOrderForm.valid) {
+        const orderData = this.editOrderForm.value;
+        order.deliveryPersonnelId = orderData.deliveryPersonnel;
+        order.orderStatus = orderData.orderStatus;
+        order.deliveryStatus = orderData.deliveryStatus;
+
+        this.service.updateOrder(order.id, order).then(() => {
+          console.log('Order updated successfully');
+          this.resetForm();
+          this.toggleEditMode(order);
+          this.back();
+        }).catch(error => {
+          console.error('Error updating order:', error);
+          this.displayErrorAlert('Error in updating order. Please try again later.');
+        });
       } else {
-        this.isLogistic = false;
-        this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
+        this.displayErrorAlert('Invalid form.');
       }
-    }).catch(error => {
-      console.error('Error checking permissions:', error);
-      this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
-    });
+    } else {
+      this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
+    }
 
   }
 
@@ -142,29 +199,23 @@ export class OrderDetailsComponent implements OnInit {
   }
 
 
-  deleteOrder(id:string) {
-    this.authService.canPerformAction('logistic').then(canPerform => {
-      if (canPerform) {
-        this.isLogistic = true
-        if (confirm("Are you sure you want to delete this order?")) {
-          this.service.deleteOrder(id)
-          .then((res)=>{
-            console.log('Order deleted successfully');
-            this.router.navigate(['/order'])
-          })
-          .catch(error => {
-            console.error('Error in deleting order:', error);
-            this.displayErrorAlert('Error in deleting order. Please try again later.');
-          })
-        }
-      } else {
-        this.isLogistic = false;
-        this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
+  async deleteOrder(id:string) {
+    this.isAdmin = await this.authService.canPerformAction('admin')
+    if (this.isAdmin) {
+      if (confirm("Are you sure you want to delete this order?")) {
+        this.service.deleteOrder(id)
+        .then((res)=>{
+          console.log('Order deleted successfully');
+          this.back()
+        })
+        .catch(error => {
+          console.error('Error in deleting order:', error);
+          this.displayErrorAlert('Error in deleting order. Please try again later.');
+        })
       }
-    }).catch(error => {
-      console.error('Error checking permissions:', error);
-      this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
-    });
+    } else {
+      this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
+    }
   }
   
 

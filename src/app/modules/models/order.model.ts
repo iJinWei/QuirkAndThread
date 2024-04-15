@@ -6,6 +6,7 @@ export interface IOrder {
     date?: Timestamp;
     totalAmount?: number;
     orderStatus?: string;
+    deliveryPersonnelId?: string;
     deliveryStatus?: string;
     userId?: string;
 }

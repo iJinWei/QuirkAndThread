@@ -165,8 +165,6 @@ export class ProductComponent implements OnInit {
   }
 
   focusOnForm() {
-    console.log("focus on form")
-    console.log(this.productFormElem)
     if (this.productFormElem) {
       this.productFormElem.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }

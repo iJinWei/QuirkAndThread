@@ -10,21 +10,21 @@
                     <li class="list-group-item"><strong>Customer Name:</strong> {{order.name}}</li>
                     <li class="list-group-item"><strong>Date Ordered:</strong> {{ parseDate(order.date)}}</li>
                     <li class="list-group-item"><strong>Order Status:</strong> {{order.orderStatus}}</li>
+                    <li class="list-group-item"><strong>Delivery Personnel:</strong> 
+                        <span *ngIf="deliveryPersonForThisOrder$ | async as deliveryPersonForThisOrder; else noDeliveryPerson"> {{ deliveryPersonForThisOrder.name }} </span>
+                        <span><ng-template #noDeliveryPerson> Unassigned</ng-template></span> 
+                    </li>
                     <li class="list-group-item"><strong>Delivery Status:</strong> {{order.deliveryStatus}}</li>
                     <li class="list-group-item"><strong>Total Amount:</strong> ${{order.totalAmount}}</li>
                 </ul>
                 <br>
-                <div *ngIf="isLogistic" style="margin-top: 1%;">
-                    <button class="btn btn-primary btn-sm" (click)="toggleEditMode(order)">Update Order Status</button>
+                <div style="margin-top: 1%;">
+                    <button *ngIf="isAdmin || orderAssignedToThisLogistic" class="btn btn-primary btn-sm" (click)="toggleEditMode(order)">Update Order</button>
                     &nbsp;
-                    <button class="btn btn-danger btn-sm " (click)="deleteOrder(orderId)">Delete Order</button>
+                    <button *ngIf="isAdmin" class="btn btn-danger btn-sm " (click)="deleteOrder(orderId)">Delete Order</button>
                     &nbsp;
-                    <button class="btn btn-secondary btn-sm" (click)="back()">Back</button>
-                </div>
-                <div *ngIf="!isLogistic" style="margin-top: 1%;">
-                    <button class="btn btn-secondary btn-sm" (click)="back()">Back</button>
-                </div>
-              
+                    <button *ngIf="isAdmin || orderAssignedToThisLogistic" class="btn btn-secondary btn-sm" (click)="back()">Back</button>
+                </div>             
             </div>
           </div>
     </div>
@@ -49,12 +49,21 @@
                         &nbsp;
                         <select id="orderStatus" formControlName="orderStatus">
                             <option value="">Select a status</option>
-                            <option value="Processing">Processing</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Returned">Returned</option>
+                            <option *ngFor="let status of orderStatuses" [value]="status.name">{{status.name}}</option>
                         </select>
                         <div *ngIf="editOrderForm.get('orderStatus')?.invalid && (editOrderForm.get('orderStatus')?.dirty || editOrderForm.get('orderStatus')?.touched)" class="text-danger">
                             <div *ngIf="editOrderForm.get('orderStatus')?.errors?.required">Please select a status.</div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <label for="deliveryStatus"><strong>Delivery Personnel: </strong></label>
+                        &nbsp;
+                        <select id="deliveryPersonnel" formControlName="deliveryPersonnel">
+                            <option value="">Select a delivery personnel</option>
+                            <option *ngFor="let deliveryUser of deliveryUsers" [value]="deliveryUser.uid">{{deliveryUser.name}}</option>
+                        </select>
+                        <div *ngIf="editOrderForm.get('deliveryPersonnel')?.invalid && (editOrderForm.get('deliveryPersonnel')?.dirty || editOrderForm.get('deliveryPersonnel')?.touched)" class="text-danger">
+                            <div *ngIf="editOrderForm.get('deliveryPersonnel')?.errors?.required">Please assign a delivery personnel</div>
                         </div>
                     </li>
                     <li class="list-group-item">
@@ -62,10 +71,7 @@
                         &nbsp;
                         <select id="deliveryStatus" formControlName="deliveryStatus">
                             <option value="">Select a status</option>
-                            <option value="Preparing to be shipped">Preparing to be shipped</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Out for Delivery">Out for Delivery</option>
-                            <option value="Delivered">Delivered</option>
+                            <option *ngFor="let status of deliveryStatuses" [value]="status.name">{{status.name}}</option>
                         </select>
                         <div *ngIf="editOrderForm.get('deliveryStatus')?.invalid && (editOrderForm.get('deliveryStatus')?.dirty || editOrderForm.get('deliveryStatus')?.touched)" class="text-danger">
                             <div *ngIf="editOrderForm.get('deliveryStatus')?.errors?.required">Please select a status.</div>

@@ -7,19 +7,18 @@ import {
   deleteDoc,
   doc,
   docData,
-  getDoc,
+  getDocs,
+  orderBy,
   query,
+  setDoc,
   updateDoc,
   where,
-  DocumentReference,
-  getDocs,
 } from '@angular/fire/firestore';
-import { combineLatest, map, Observable, switchMap, tap } from 'rxjs';
+import { Observable, catchError, combineLatest, map, switchMap } from 'rxjs';
 import { IOrder } from './modules/models/order.model';
 import { IOrderItem } from './modules/models/order-item.model';
-import { IUser, User } from './modules/models/user.model';
+import { DataTablesResponse, IUser, User } from './modules/models/user.model';
 import { IRole } from './modules/models/role.model';
-import { DataTablesResponse } from './modules/models/user.model';
 import moment from 'moment';
 
 @Injectable({
@@ -63,7 +62,18 @@ export class SharedService {
   // Orders Firestore Methods
   getOrders() {
     let ordersCollection = collection(this.fs, 'orders');
-    return collectionData(ordersCollection, { idField: 'id' });
+    const q = query(ordersCollection, orderBy('date'));
+    return collectionData(q, { idField: 'id' });
+  }
+
+  getOrdersByDeliveryPersonId(deliveryPersonId: string) {
+    let ordersCollection = collection(this.fs, 'orders');
+    const q = query(
+      ordersCollection,
+      where('deliveryPersonnelId', '==', deliveryPersonId),
+      orderBy('date')
+    );
+    return collectionData(q, { idField: 'id' });
   }
 
   getOrderById(id: string) {
@@ -84,10 +94,9 @@ export class SharedService {
 
   async deleteOrder(id: string) {
     let docRef = doc(this.fs, 'orders/' + id);
-
     let orderItemsCollection = collection(this.fs, 'orderItems');
     const q = query(orderItemsCollection, where('orderId', '==', id));
-    console.log(q);
+
     // Get documents based on the query
     const querySnapshot = await getDocs(q);
 
@@ -97,14 +106,7 @@ export class SharedService {
         await deleteDoc(doc.ref);
       } catch (error) {}
     });
-
     return deleteDoc(docRef);
-  }
-
-  getProductsByName(name: string) {
-    let productsCollection = collection(this.fs, 'orders');
-    const q = query(productsCollection, where('name', '==', name));
-    return collectionData(q, { idField: 'id' });
   }
 
   updateOrder(id: string, order: any) {
@@ -132,10 +134,48 @@ export class SharedService {
     return docData(docRef, { idField: 'id' }) as Observable<IOrderItem>;
   }
 
-  // Users Collection
-  addUser(user: any) {
+  // get all delivery personnel that is not superuser and has 'logistic' role
+  getAllDeliveryPersonnel() {
     let usersCollection = collection(this.fs, 'users');
-    return addDoc(usersCollection, user);
+    const queryConstraints = [];
+    queryConstraints.push(where('roles', 'array-contains', 'logistic'));
+    queryConstraints.push(where('name', '!=', 'superuser'));
+    const q = query(usersCollection, ...queryConstraints);
+    // let q = query(usersCollection, where('roles', 'array-contains', 'logistic'))
+    return collectionData(q, { idField: 'id' });
+  }
+
+  getOrderStatuses() {
+    let orderStatusCollection = collection(this.fs, 'orderStatus');
+    return collectionData(orderStatusCollection, { idField: 'id' });
+  }
+
+  getDeliveryStatuses() {
+    let deliveryStatusCollection = collection(this.fs, 'deliveryStatus');
+    return collectionData(deliveryStatusCollection, { idField: 'id' });
+  }
+
+  // method to get single field from observable
+  getField(data$: Observable<any>, fieldName: string): Observable<any> {
+    return data$.pipe(
+      map((data) => data[fieldName]),
+      catchError((error) => {
+        // console.error('Error: ', error);
+        return '';
+      })
+    );
+  }
+
+  // Users Collection
+  addUser(uid: string, userData: any) {
+    let usersCollection = collection(this.fs, 'users');
+    let userDocRef = doc(usersCollection, uid); // Create a document reference with the UID
+    return setDoc(userDocRef, { ...userData, uid }); // Include the uid in the userData
+  }
+
+  getUserById(id: string) {
+    const docRef = doc(this.fs, 'users', id);
+    return docData(docRef) as Observable<IUser>;
   }
 
   getUsers(): Observable<DataTablesResponse> {
