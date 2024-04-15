@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   Firestore,
+  Timestamp,
   addDoc,
   collection,
   collectionData,
@@ -264,6 +265,22 @@ export class SharedService {
       'YYYY-MM-DDTHH:mm:ss.SSSZ'
     );
     return formattedDate;
+  }
+
+  async getUserDetails(uid: string) {
+    const q = query(collection(this.fs, 'users'), where('uid', '==', uid));
+    const snapshot = await getDocs(q);
+    const userResult = snapshot.docs[0].data();
+
+    return [userResult];
+  }
+
+  async updateLastLogin(uid: string) {
+    const q = query(collection(this.fs, 'users'), where('uid', '==', uid));
+    const snapshot = await getDocs(q);
+    const snapshotDocId = snapshot.docs[0].id;
+    const docRef = doc(this.fs, 'users', snapshotDocId);
+    setDoc(docRef, { lastLogin: Timestamp.now() }, { merge: true });
   }
 
   // Roles Collection

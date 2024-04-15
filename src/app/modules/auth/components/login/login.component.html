@@ -1,15 +1,16 @@
 <!--begin::Form-->
-<form class="form w-100" [formGroup]="loginForm" novalidate="novalidate" id="kt_login_signin_form"
-  (ngSubmit)="submit()">
+<form
+  class="form w-100"
+  [formGroup]="loginForm"
+  novalidate="novalidate"
+  id="kt_login_signin_form"
+  (ngSubmit)="submit()"
+>
   <!--begin::Heading-->
   <div class="text-center mb-11">
-    <h1 class="text-gray-900 fw-bolder mb-3">
-      Sign In
-    </h1>
+    <h1 class="text-gray-900 fw-bolder mb-3">Sign In</h1>
     <!--begin::Subtitle-->
-    <div class="text-gray-500 fw-semibold fs-6">
-      Your Social Campaigns
-    </div>
+    <div class="text-gray-500 fw-semibold fs-6">Your Social Campaigns</div>
     <!--end::Subtitle--->
     <!-- <div class="text-gray-500 fw-bold fs-4">
       New Here?
@@ -28,9 +29,15 @@
     <!--begin::Col-->
     <div class="col-md-6">
       <!--begin::Google link--->
-      <a href="#"
-        class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
-        <img alt="Logo" src="./assets/media/svg/brand-logos/google-icon.svg" class="h-15px me-3" />
+      <a
+        href="#"
+        class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100"
+      >
+        <img
+          alt="Logo"
+          src="./assets/media/svg/brand-logos/google-icon.svg"
+          class="h-15px me-3"
+        />
         Sign in with Google
       </a>
       <!--end::Google link--->
@@ -40,10 +47,20 @@
     <!--begin::Col-->
     <div class="col-md-6">
       <!--begin::Google link--->
-      <a href="#"
-        class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
-        <img alt="Logo" src="./assets/media/svg/brand-logos/apple-black.svg" class="theme-light-show h-15px me-3" />
-        <img alt="Logo" src="./assets/media/svg/brand-logos/apple-black-dark.svg" class="theme-dark-show h-15px me-3" />
+      <a
+        href="#"
+        class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100"
+      >
+        <img
+          alt="Logo"
+          src="./assets/media/svg/brand-logos/apple-black.svg"
+          class="theme-light-show h-15px me-3"
+        />
+        <img
+          alt="Logo"
+          src="./assets/media/svg/brand-logos/apple-black-dark.svg"
+          class="theme-dark-show h-15px me-3"
+        />
         Sign in with Apple
       </a>
       <!--end::Google link--->
@@ -58,18 +75,6 @@
   </div>
   <!--end::Separator-->
 
-  <!-- begin::Alert info-->
-  <ng-container *ngIf="!hasError">
-    <div class="mb-10 bg-light-info p-8 rounded">
-      <div class="text-info">
-        Use account <strong>{{ defaultAuth.email }}</strong> and password
-        <strong>{{ defaultAuth.password }}</strong> to continue.
-      </div>
-    </div>
-  </ng-container>
-  <!-- end::Alert info-->
-
-
   <!-- begin::Alert error-->
   <ng-container *ngIf="hasError">
     <div class="mb-lg-15 alert alert-danger">
@@ -83,60 +88,91 @@
   <!--begin::Form group-->
   <div class="fv-row mb-8">
     <label class="form-label fs-6 fw-bolder text-gray-900">Email</label>
-    <input class="form-control bg-transparent" type="email" name="email" formControlName="email" autocomplete="off"
+    <input
+      class="form-control bg-transparent"
+      type="email"
+      name="email"
+      formControlName="email"
+      autocomplete="off"
       [ngClass]="{
         'is-invalid': loginForm.controls['email'].invalid,
         'is-valid': loginForm.controls['email'].valid
-      }" />
-    <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
+      }"
+    />
+    <ng-container
+      [ngTemplateOutlet]="formError"
+      [ngTemplateOutletContext]="{
         validation: 'required',
         message: 'Email is required',
         control: loginForm.controls['email']
-      }"></ng-container>
-    <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
+      }"
+    ></ng-container>
+    <ng-container
+      [ngTemplateOutlet]="formError"
+      [ngTemplateOutletContext]="{
         validation: 'email',
         message: 'Email is invalid',
         control: loginForm.controls['email']
-      }"></ng-container>
-    <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
+      }"
+    ></ng-container>
+    <ng-container
+      [ngTemplateOutlet]="formError"
+      [ngTemplateOutletContext]="{
         validation: 'minLength',
         message: 'Email should have at least 3 symbols',
         control: loginForm.controls['email']
-      }"></ng-container>
-    <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
+      }"
+    ></ng-container>
+    <ng-container
+      [ngTemplateOutlet]="formError"
+      [ngTemplateOutletContext]="{
         validation: 'maxLength',
         message: 'Email should have maximum 360 symbols',
         control: loginForm.controls['email']
-      }"></ng-container>
+      }"
+    ></ng-container>
   </div>
   <!--end::Form group-->
 
   <!--begin::Form group-->
   <div class="fv-row mb-3">
-
     <label class="form-label fw-bolder text-gray-900 fs-6 mb-0">Password</label>
 
-    <input class="form-control bg-transparent" type="password" name="password" autocomplete="off"
-      formControlName="password" [ngClass]="{
+    <input
+      class="form-control bg-transparent"
+      type="password"
+      name="password"
+      autocomplete="off"
+      formControlName="password"
+      [ngClass]="{
         'is-invalid': loginForm.controls['password'].invalid,
         'is-valid': loginForm.controls['password'].valid
-      }" />
-    <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
+      }"
+    />
+    <ng-container
+      [ngTemplateOutlet]="formError"
+      [ngTemplateOutletContext]="{
         validation: 'required',
         message: 'Password is required',
         control: loginForm.controls['password']
-      }"></ng-container>
-    <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
+      }"
+    ></ng-container>
+    <ng-container
+      [ngTemplateOutlet]="formError"
+      [ngTemplateOutletContext]="{
         validation: 'minlength',
         message: 'Password should have at least 3 symbols',
         control: loginForm.controls['password']
-      }"></ng-container>
-    <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
+      }"
+    ></ng-container>
+    <ng-container
+      [ngTemplateOutlet]="formError"
+      [ngTemplateOutletContext]="{
         validation: 'maxLength',
         message: 'Password should have maximum 100 symbols',
         control: loginForm.controls['password']
-      }"></ng-container>
-
+      }"
+    ></ng-container>
   </div>
   <!--end::Form group-->
 
@@ -154,11 +190,18 @@
 
   <!--begin::Action-->
   <div class="d-grid mb-10">
-    <button type="submit" id="kt_sign_in_submit" class="btn btn-primary" [disabled]="loginForm.invalid">
+    <button
+      type="submit"
+      id="kt_sign_in_submit"
+      class="btn btn-primary"
+      [disabled]="loginForm.invalid"
+    >
       <ng-container *ngIf="isLoading$ | async">
         <span class="indicator-progress" [style.display]="'block'">
           Please wait...
-          <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+          <span
+            class="spinner-border spinner-border-sm align-middle ms-2"
+          ></span>
         </span>
       </ng-container>
       <ng-container *ngIf="(isLoading$ | async) === false">
@@ -170,17 +213,22 @@
   <div class="text-gray-500 text-center fw-semibold fs-6">
     Not a Member yet?
 
-    <a routerLink="/auth/registration" class="link-primary">
-      Sign up
-    </a>
+    <a routerLink="/auth/registration" class="link-primary"> Sign up </a>
   </div>
 
   <!--end::Action-->
 </form>
 <!--end::Form-->
 
-<ng-template #formError let-control="control" let-message="message" let-validation="validation">
-  <ng-container *ngIf="control.hasError(validation) && (control.dirty || control.touched)">
+<ng-template
+  #formError
+  let-control="control"
+  let-message="message"
+  let-validation="validation"
+>
+  <ng-container
+    *ngIf="control.hasError(validation) && (control.dirty || control.touched)"
+  >
     <div class="fv-plugins-message-container">
       <span role="alert">
         {{ message }}

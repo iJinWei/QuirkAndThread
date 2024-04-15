@@ -14,8 +14,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class LoginComponent implements OnInit, OnDestroy {
   // KeenThemes mock, change it to:
   defaultAuth: any = {
-    email: '', //admin@demo.com
-    password: '', //demo
+    email: 'admin@demo.com',
+    password: 'demo',
   };
   loginForm: FormGroup;
   hasError: boolean;
@@ -88,7 +88,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   //   this.unsubscribe.push(loginSubscr);
   // }
 
-
   // Firebase
   submit() {
     this.hasError = false;
@@ -98,28 +97,27 @@ export class LoginComponent implements OnInit, OnDestroy {
       .pipe(first())
       .subscribe({
         next: (user) => {
-            if (user && user.emailVerified) {
-              this.router.navigate([this.returnUrl]);
-            }
-            else if (user && !user.emailVerified) {
-              this.hasError = true;
-              this.loginErrorMessage = 'Please verify your email before logging in.';
-            }
-            else {
-              this.hasError = true;
-              this.loginErrorMessage = 'Login failed. Please check your email and password.';
-            }
+          if (user && user.emailVerified) {
+            this.router.navigate([this.returnUrl]);
+          } else if (user && !user.emailVerified) {
+            this.hasError = true;
+            this.loginErrorMessage =
+              'Please verify your email before logging in.';
+          } else {
+            this.hasError = true;
+            this.loginErrorMessage =
+              'Login failed. Please check your email and password.';
+          }
         },
         error: (err) => {
           this.hasError = true;
           console.error(err);
           alert(`Login failed: ${err.message}`);
-        }
+        },
       });
-  
+
     this.unsubscribe.push(loginSubscr);
   }
-  
 
   ngOnDestroy() {
     this.unsubscribe.forEach((sb) => sb.unsubscribe());

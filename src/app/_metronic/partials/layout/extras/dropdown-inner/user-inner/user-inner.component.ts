@@ -2,6 +2,8 @@ import { Component, HostBinding, OnDestroy, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { TranslationService } from '../../../../../../modules/i18n';
 import { AuthService, UserType } from '../../../../../../modules/auth';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { SharedService } from 'src/app/shared.service';
 
 @Component({
   selector: 'app-user-inner',
@@ -17,18 +19,38 @@ export class UserInnerComponent implements OnInit, OnDestroy {
   langs = languages;
   private unsubscribe: Subscription[] = [];
 
+  user: any;
+  uid: string;
+
   constructor(
     private auth: AuthService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private afAuth: AngularFireAuth,
+    private sharedService: SharedService
   ) {}
 
   ngOnInit(): void {
-    this.user$ = this.auth.currentUserSubject.asObservable();
+    // this.user$ = this.auth.currentUserSubject.asObservable();
     this.setLanguage(this.translationService.getSelectedLanguage());
+
+    this.afAuth.authState.subscribe((user) => {
+      if (user) {
+        this.uid = user.uid || '';
+      } else {
+        this.uid = '';
+      }
+      this.sharedService.getUserDetails(this.uid).then((results) => {
+        if (results[0] != undefined) {
+          this.user = results[0];
+          this.user.lastLogin = this.user.lastLogin.toDate();
+        }
+        this.sharedService.updateLastLogin(this.uid);
+      });
+    });
   }
 
   logout() {
-    this.auth.logout();
+    this.auth.logoutFirebase();
     document.location.reload();
   }
 
