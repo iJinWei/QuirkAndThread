@@ -1,5 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, BehaviorSubject, of, Subscription, from } from 'rxjs';
+import {
+  Observable,
+  BehaviorSubject,
+  of,
+  Subscription,
+  from,
+  firstValueFrom,
+} from 'rxjs';
 import { map, catchError, switchMap, finalize } from 'rxjs/operators';
 import { UserModel } from '../models/user.model';
 import { AuthModel } from '../models/auth.model';
@@ -7,6 +14,19 @@ import { AuthHTTPService } from './auth-http';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import {
+  Firestore,
+  addDoc,
+  collection,
+  collectionData,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from '@angular/fire/firestore';
 
 export type UserType = UserModel | undefined;
 
@@ -23,6 +43,7 @@ export class AuthService implements OnDestroy {
   isLoading$: Observable<boolean>;
   currentUserSubject: BehaviorSubject<UserType>;
   isLoadingSubject: BehaviorSubject<boolean>;
+  private user = new BehaviorSubject<any>(null);
 
   get currentUserValue(): UserType {
     return this.currentUserSubject.value;
@@ -35,74 +56,22 @@ export class AuthService implements OnDestroy {
   constructor(
     private authHttpService: AuthHTTPService,
     private router: Router,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private fs: Firestore
   ) {
     this.isLoadingSubject = new BehaviorSubject<boolean>(false);
     this.currentUserSubject = new BehaviorSubject<UserType>(undefined);
     this.currentUser$ = this.currentUserSubject.asObservable();
     this.isLoading$ = this.isLoadingSubject.asObservable();
-    const subscr = this.getUserByToken().subscribe();
-    this.unsubscribe.push(subscr);
-  }
-
-  // public methods
-  login(email: string, password: string): Observable<UserType> {
-    this.isLoadingSubject.next(true);
-    return this.authHttpService.login(email, password).pipe(
-      map((auth: AuthModel) => {
-        const result = this.setAuthFromLocalStorage(auth);
-        return result;
-      }),
-      switchMap(() => this.getUserByToken()),
-      catchError((err) => {
-        console.error('err', err);
-        return of(undefined);
-      }),
-      finalize(() => this.isLoadingSubject.next(false))
-    );
-  }
-
-  logout() {
-    localStorage.removeItem(this.authLocalStorageToken);
-    this.router.navigate(['/auth/login'], {
-      queryParams: {},
+    this.afAuth.authState.subscribe((user) => {
+      if (user) {
+        // User is signed in.
+        this.user.next(user);
+      } else {
+        // User is signed out.
+        this.user.next(null);
+      }
     });
-  }
-
-  getUserByToken(): Observable<UserType> {
-    const auth = this.getAuthFromLocalStorage();
-    if (!auth || !auth.authToken) {
-      return of(undefined);
-    }
-
-    this.isLoadingSubject.next(true);
-    return this.authHttpService.getUserByToken(auth.authToken).pipe(
-      map((user: UserType) => {
-        if (user) {
-          this.currentUserSubject.next(user);
-        } else {
-          this.logout();
-        }
-        return user;
-      }),
-      finalize(() => this.isLoadingSubject.next(false))
-    );
-  }
-
-  // need create new user then login
-  registration(user: UserModel): Observable<any> {
-    this.isLoadingSubject.next(true);
-    return this.authHttpService.createUser(user).pipe(
-      map(() => {
-        this.isLoadingSubject.next(false);
-      }),
-      switchMap(() => this.login(user.email, user.password)),
-      catchError((err) => {
-        console.error('err', err);
-        return of(undefined);
-      }),
-      finalize(() => this.isLoadingSubject.next(false))
-    );
   }
 
   forgotPassword(email: string): Observable<boolean> {
@@ -122,7 +91,7 @@ export class AuthService implements OnDestroy {
     return false;
   }
 
-  private getAuthFromLocalStorage(): AuthModel | undefined {
+  public getAuthFromLocalStorage(): AuthModel | undefined {
     try {
       const lsValue = localStorage.getItem(this.authLocalStorageToken);
       if (!lsValue) {
@@ -140,7 +109,6 @@ export class AuthService implements OnDestroy {
   ngOnDestroy() {
     this.unsubscribe.forEach((sb) => sb.unsubscribe());
   }
-
 
   // Firebase functions
 
@@ -162,14 +130,20 @@ export class AuthService implements OnDestroy {
   }
 
   sendEmailVerification(user: any) {
-    user.sendEmailVerification().then((res: any) => {
-      this.router.navigate(['/auth/verify-email']);
-    }, (error: any) => {
-      alert('Something went wrong, verification email not sent.');
-    })
+    user.sendEmailVerification().then(
+      (res: any) => {
+        this.router.navigate(['/auth/verify-email']);
+      },
+      (error: any) => {
+        alert('Something went wrong, verification email not sent.');
+      }
+    );
   }
-  
-  loginFirebase(email: string, password: string): Observable<UserModel | undefined> {
+
+  loginFirebase(
+    email: string,
+    password: string
+  ): Observable<UserModel | undefined> {
     this.isLoadingSubject.next(true);
     return from(this.afAuth.signInWithEmailAndPassword(email, password)).pipe(
       map((userCredential) => {
@@ -212,7 +186,7 @@ export class AuthService implements OnDestroy {
         // Optionally, update local storage to keep the user logged in between page refreshes
         // This step requires careful consideration of what you're storing for security reasons
         // this.setAuthFromLocalStorage(...); // Adjust this according to your app's requirements
-        
+
         // Assuming userCredential.user provides refreshToken and you want to simulate authToken
         const auth = new AuthModel();
         auth.authToken = userCredential.user.refreshToken; // Simulate authToken with refreshToken
@@ -241,27 +215,79 @@ export class AuthService implements OnDestroy {
 
   logoutFirebase() {
     // Sign out from Firebase
-    this.afAuth.signOut().then(() => {
-      // Remove user data from local storage or any other cleanup
-      localStorage.removeItem(this.authLocalStorageToken);
-      
-      // Reset the current user subject to reflect no user is logged in
-      this.currentUserSubject.next(undefined);
-  
-      // Navigate to the login page
-      this.router.navigate(['/auth/login'], {
-        queryParams: {},
+    this.afAuth
+      .signOut()
+      .then(() => {
+        // Remove user data from local storage or any other cleanup
+        localStorage.removeItem(this.authLocalStorageToken);
+
+        // Reset the current user subject to reflect no user is logged in
+        this.currentUserSubject.next(undefined);
+
+        // Navigate to the login page
+        this.router.navigate(['/auth/login'], {
+          queryParams: {},
+        });
+      })
+      .catch((error) => {
+        console.error('Logout error', error);
+        // Handle any errors that occur during the logout process
       });
-    }).catch((error) => {
-      console.error('Logout error', error);
-      // Handle any errors that occur during the logout process
-    });
   }
-  
+
   // Add a method to expose auth state
   getAuthState(): Observable<any> {
     return this.afAuth.authState;
   }
 
+  // Method to check if the currently logged-in user can perform an action based on their role
+  async canPerformAction(roleRequired: string): Promise<boolean> {
+    try {
+      // Convert the user Observable to a Promise to await its value
+      const user = await firstValueFrom(this.getUser());
 
+      if (!user || !user.uid) {
+        console.log('No user is currently logged in.');
+        return false;
+      }
+
+      // Now use the userHasRole method
+      return await this.userHasRole(user.uid, roleRequired);
+    } catch (error) {
+      console.error('Error checking if user can perform action:', error);
+      return false;
+    }
+  }
+
+  // Method to check if a user has a specific role
+  async userHasRole(userId: string, roleToCheck: string): Promise<boolean> {
+    try {
+      // Reference to the 'users' collection
+      const usersCollectionRef = collection(this.fs, 'users');
+      // Create a query against the collection to find the user document where the uid field matches the provided userId
+      const q = query(usersCollectionRef, where('uid', '==', userId));
+
+      // Execute the query
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        // Assuming a unique uid for each user, there should be only one matching document
+        const userData = querySnapshot.docs[0].data();
+
+        // Check if the 'roles' array contains the roleToCheck
+        if (userData.roles && userData.roles.includes(roleToCheck)) {
+          return true; // User has the role
+        }
+      }
+
+      return false; // User does not have the role or document does not exist
+    } catch (error) {
+      console.error("Error fetching user's roles:", error);
+      throw error; // Rethrow or handle as needed
+    }
+  }
+
+  getUser() {
+    return this.user.asObservable();
+  }
 }

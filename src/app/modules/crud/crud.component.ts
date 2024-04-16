@@ -1,6 +1,21 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2, TemplateRef, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  Renderer2,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
-import { NgbModal, NgbModalOptions, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbModal,
+  NgbModalOptions,
+  NgbModalRef,
+} from '@ng-bootstrap/ng-bootstrap';
 import { SwalComponent } from '@sweetalert2/ngx-sweetalert2';
 import { DataTableDirective } from 'angular-datatables';
 import { fromEvent } from 'rxjs';
@@ -13,7 +28,6 @@ import { SweetAlertOptions } from 'sweetalert2';
   styleUrls: ['./crud.component.scss'],
 })
 export class CrudComponent implements OnInit, AfterViewInit, OnDestroy {
-
   @Input() datatableConfig: DataTables.Settings = {};
 
   @Input() route: string = '/';
@@ -50,64 +64,67 @@ export class CrudComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private clickListener: () => void;
 
-  constructor(private renderer: Renderer2, private router: Router, private modalService: NgbModal) { }
+  constructor(
+    private renderer: Renderer2,
+    private router: Router,
+    private modalService: NgbModal
+  ) {}
 
   ngOnInit(): void {
     this.dtOptions = {
-      dom: "<'row'<'col-sm-12'tr>>" +
+      dom:
+        "<'row'<'col-sm-12'tr>>" +
         "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
       processing: true,
       language: {
-        processing: '<span class="spinner-border spinner-border-sm align-middle"></span> Loading...'
-      }, ...this.datatableConfig
+        processing:
+          '<span class="spinner-border spinner-border-sm align-middle"></span> Loading...',
+      },
+      ...this.datatableConfig,
     };
     this.renderActionColumn();
 
     this.setupSweetAlert();
 
     if (this.reload) {
-      this.reload.subscribe(data => {
+      this.reload.subscribe((data) => {
         this.modalService.dismissAll();
-        this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => dtInstance.ajax.reload());
+        this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) =>
+          dtInstance.ajax.reload()
+        );
       });
     }
   }
 
   renderActionColumn(): void {
-    const actionColumn = {
-      sortable: false,
-      title: 'Actions',
-      render: (data: any, type: any, full: any) => {
-        const editButton = `
-          <button class="btn btn-icon btn-active-light-primary w-30px h-30px me-3" data-action="edit" data-id="${full.id}">
-            <i class="ki-duotone ki-pencil fs-3"><span class="path1"></span><span class="path2"></span></i>
-          </button>`;
-
-        const deleteButton = `
-          <button class="btn btn-icon btn-active-light-primary w-30px h-30px" data-action="delete" data-id="${full.id}">
-            <i class="ki-duotone ki-trash fs-3">
-              <span class="path1"></span><span class="path2"></span>
-              <span class="path3"></span><span class="path4"></span><span class="path5"></span>
-            </i>
-          </button>`;
-
-        const buttons = [];
-
-        if (this.editEvent.observed) {
-          buttons.push(editButton);
-        }
-
-        if (this.deleteEvent.observed) {
-          buttons.push(deleteButton);
-        }
-
-        return buttons.join('');
-      },
-    };
-
-    if (this.dtOptions.columns) {
-      this.dtOptions.columns.push(actionColumn);
-    }
+    // const actionColumn = {
+    //   sortable: false,
+    //   title: 'Actions',
+    //   render: (data: any, type: any, full: any) => {
+    //     const editButton = `
+    //       <button class="btn btn-icon btn-active-light-primary w-30px h-30px me-3" data-action="edit" data-id="${full.id}">
+    //         <i class="ki-duotone ki-pencil fs-3"><span class="path1"></span><span class="path2"></span></i>
+    //       </button>`;
+    //     const deleteButton = `
+    //       <button class="btn btn-icon btn-active-light-primary w-30px h-30px" data-action="delete" data-id="${full.id}">
+    //         <i class="ki-duotone ki-trash fs-3">
+    //           <span class="path1"></span><span class="path2"></span>
+    //           <span class="path3"></span><span class="path4"></span><span class="path5"></span>
+    //         </i>
+    //       </button>`;
+    //     const buttons = [];
+    //     if (this.editEvent.observed) {
+    //       buttons.push(editButton);
+    //     }
+    //     if (this.deleteEvent.observed) {
+    //       buttons.push(deleteButton);
+    //     }
+    //     return buttons.join('');
+    //   },
+    // };
+    // if (this.dtOptions.columns) {
+    //   this.dtOptions.columns.push(actionColumn);
+    // }
   }
 
   ngAfterViewInit(): void {
@@ -124,12 +141,18 @@ export class CrudComponent implements OnInit, AfterViewInit, OnDestroy {
 
           case 'create':
             this.createEvent.emit(true);
-            this.modalRef = this.modalService.open(this.modal, this.modalConfig);
+            this.modalRef = this.modalService.open(
+              this.modal,
+              this.modalConfig
+            );
             break;
 
           case 'edit':
             this.editEvent.emit(this.idInAction);
-            this.modalRef = this.modalService.open(this.modal, this.modalConfig);
+            this.modalRef = this.modalService.open(
+              this.modal,
+              this.modalConfig
+            );
             break;
 
           case 'delete':
@@ -162,17 +185,21 @@ export class CrudComponent implements OnInit, AfterViewInit, OnDestroy {
     fromEvent<KeyboardEvent>(document, 'keyup')
       .pipe(
         debounceTime(50),
-        map(event => {
+        map((event) => {
           const target = event.target as HTMLElement;
           const action = target.getAttribute('data-action');
-          const value = (target as HTMLInputElement).value?.trim().toLowerCase();
+          const value = (target as HTMLInputElement).value
+            ?.trim()
+            .toLowerCase();
 
           return { action, value };
         })
       )
       .subscribe(({ action, value }) => {
         if (action === 'filter') {
-          this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => dtInstance.search(value).draw());
+          this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) =>
+            dtInstance.search(value).draw()
+          );
         }
       });
   }

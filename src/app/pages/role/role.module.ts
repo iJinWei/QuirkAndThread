@@ -4,12 +4,15 @@ import { RoleListingComponent } from './role-listing/role-listing.component';
 import { RoleDetailsComponent } from './role-details/role-details.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { NgbNavModule, NgbDropdownModule, NgbCollapseModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbNavModule,
+  NgbDropdownModule,
+  NgbCollapseModule,
+  NgbTooltipModule,
+} from '@ng-bootstrap/ng-bootstrap';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 import { SharedModule } from 'src/app/_metronic/shared/shared.module';
 import { CrudModule } from 'src/app/modules/crud/crud.module';
-
-
 
 @NgModule({
   declarations: [RoleDetailsComponent, RoleListingComponent],
@@ -23,7 +26,7 @@ import { CrudModule } from 'src/app/modules/crud/crud.module';
         component: RoleListingComponent,
       },
       {
-        path: ':id',
+        path: ':role',
         component: RoleDetailsComponent,
       },
     ]),
@@ -34,6 +37,6 @@ import { CrudModule } from 'src/app/modules/crud/crud.module';
     NgbCollapseModule,
     NgbTooltipModule,
     SweetAlert2Module.forChild(),
-  ]
+  ],
 })
-export class RoleModule { }
+export class RoleModule {}

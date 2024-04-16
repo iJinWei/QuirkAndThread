@@ -1,75 +1,110 @@
 
+<div id="alertMessage" class="alert" role="alert"></div>
 
-<form [formGroup]="productForm" (ngSubmit)="saveProduct()">
-    <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td style="padding-right: 5px; white-space: nowrap;"><label for="category">Category:</label></td>
-          <td>
-            <select id="category" formControlName="category" style="width: calc(100% - 10px);">
-              <option value="">Select a category</option>
-              <option *ngFor="let category of categories" [value]="category.name">{{category.name}}</option>
-            </select>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding-right: 5px; white-space: nowrap;"><label for="description">Description:</label></td>
-          <td><input id="description" formControlName="description" placeholder="Description" style="width: calc(100% - 10px);"></td>
-        </tr>
-        <tr>
-          <td style="padding-right: 5px; white-space: nowrap;"><label for="imageUrl">Image URL:</label></td>
-          <td><input id="imageUrl" formControlName="imageUrl" placeholder="Image URL" style="width: calc(100% - 10px);"></td>
-        </tr>
-        <tr>
-          <td style="padding-right: 5px; white-space: nowrap;"><label for="name">Name:</label></td>
-          <td><input id="name" formControlName="name" placeholder="Name" style="width: calc(100% - 10px);"></td>
-        </tr>
-        <tr>
-          <td style="padding-right: 5px; white-space: nowrap;"><label for="price">Price:</label></td>
-          <td><input id="price" type="number" formControlName="price" placeholder="Price" style="width: calc(100% - 10px);"></td>
-        </tr>
-        <tr>
-          <td style="padding-right: 5px; white-space: nowrap;"><label for="stockQuantity">Stock Quantity:</label></td>
-          <td><input id="stockQuantity" type="number" formControlName="stockQuantity" placeholder="Stock Quantity" style="width: calc(100% - 10px);"></td>
-        </tr>
-      </table>      
-    <div style="text-align: center; margin-top: 20px;">
-      <button type="submit">Add Product</button>
+<form [formGroup]="productForm" #productFormElem (ngSubmit)="saveProduct()">
+  <div class="card">
+    <div class="card-body">
+      <div class="mb-3 row">
+        <label for="name" class="col-sm-2 form-label">Name:</label>
+        <div class="col-sm-10">
+          <input id="name" formControlName="name" placeholder="Name" style="width: calc(100% - 10px);">
+          <div *ngIf="productForm.get('name')?.invalid && (productForm.get('name')?.dirty || productForm.get('name')?.touched)" class="text-danger">
+            <div *ngIf="productForm.get('name')?.errors?.['required']">Name is required.</div>
+            <div *ngIf="productForm.get('name')?.errors?.['maxlength']">Name cannot exceed 30 characters.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3 row">
+        <label for="category" class="col-sm-2 form-label">Category:</label>
+        <div class="col-sm-10">
+          <select id="category" formControlName="category" style="width: calc(100% - 10px);">
+            <option value="">Select a category</option>
+            <option *ngFor="let category of categories" [value]="category.name">{{category.name}}</option>
+          </select>
+          <div *ngIf="productForm.get('category')?.invalid && (productForm.get('category')?.dirty || productForm.get('category')?.touched)" class="text-danger">
+            <div *ngIf="productForm.get('category')?.errors?.['required']">Category is required.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3 row">
+        <label for="description" class="col-sm-2 form-label">Description:</label>
+        <div class="col-sm-10">
+          <input id="description" formControlName="description" placeholder="Description" style="width: calc(100% - 10px);">
+          <div *ngIf="productForm.get('description')?.invalid && (productForm.get('description')?.dirty || productForm.get('description')?.touched)" class="text-danger">
+            <div *ngIf="productForm.get('description')?.errors?.['required']">Description is required.</div>
+            <div *ngIf="productForm.get('description')?.errors?.['maxlength']">Description cannot exceed 100 characters.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3 row">
+        <label for="imageUrl" class="col-sm-2 form-label">Image URL:</label>
+        <div class="col-sm-10">
+          <input id="imageUrl" formControlName="imageUrl" placeholder="Image URL" style="width: calc(100% - 10px);">
+          <div *ngIf="productForm.get('imageUrl')?.invalid && (productForm.get('imageUrl')?.dirty || productForm.get('imageUrl')?.touched)" class="text-danger">
+            <div *ngIf="productForm.get('imageUrl')?.errors?.['required']">Image URL is required.</div>
+            <div *ngIf="productForm.get('imageUrl')?.errors?.['invalidImageUrl']">Invalid URL format.</div>
+            <div *ngIf="productForm.get('imageUrl')?.errors?.['invalidImageExtension']">URL should point to an image (jpg, jpeg, png, gif).</div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3 row">
+        <label for="price" class="col-sm-2 form-label">Price:</label>
+        <div class="col-sm-10">
+          <input id="price" type="number" formControlName="price" placeholder="Price" style="width: calc(100% - 10px);">
+          <div *ngIf="productForm.get('price')?.invalid && (productForm.get('price')?.dirty || productForm.get('price')?.touched)" class="text-danger">
+            <div *ngIf="productForm.get('price')?.errors?.['required']">Price is required.</div>
+            <div *ngIf="productForm.get('price')?.errors?.['invalidPrice']">Invalid price.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3 row">
+        <label for="price" class="col-sm-2 form-label">Stock:</label>
+        <div class="col-sm-10">
+          <input id="stockQuantity" type="number" formControlName="stockQuantity" placeholder="Stock Quantity" style="width: calc(100% - 10px);">
+          <div *ngIf="productForm.get('stockQuantity')?.invalid && (productForm.get('stockQuantity')?.dirty || productForm.get('stockQuantity')?.touched)" class="text-danger">
+            <div *ngIf="productForm.get('stockQuantity')?.errors?.['required']">Stock Quantity is required.</div>
+            <div *ngIf="productForm.get('stockQuantity')?.errors?.['invalidNumber']">Invalid number.</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-sm" type="submit" [disabled]="!productForm.valid">Save Product</button>
+      &nbsp;
+      <button class="btn btn-secondary btn-sm" type="button" (click)="resetForm()">Cancel</button>
+      <div *ngIf="errorMessage" class="text-danger">
+        {{errorMessage}}
+      </div>
     </div>
-  </form>
-  
-  
-
-  <br><br><br>
-
-  <div style="margin-bottom: 20px; text-align: center;">
-    <label for="filterCategory">Filter by Category:</label>
-    <select id="filterCategory" (change)="filterProducts($event)">
-      <option value="">All Categories</option>
-      <option *ngFor="let category of categories" [value]="category.name">{{category.name}}</option>
-    </select>
   </div>
-  
+  <br>
+</form>
 
-  <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
-    <thead>
-      <tr>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Category</th>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Name</th>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Price</th>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Stock</th>
-        <th style="padding: 0 15px; border-bottom: 2px solid #000;">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let product of products$ | async" style="border-bottom: 1px solid #ccc;">
-        <td style="padding: 0 15px;">{{product.category}}</td>
-        <td style="padding: 0 15px;">{{product.name}}</td>
-        <td style="padding: 0 15px;">${{product.price}}</td>
-        <td style="padding: 0 15px;">{{product.stockQuantity}}</td>
-        <td style="padding: 0 15px;">
-          <button style="cursor: pointer;" (click)="editProduct(product)">Edit Product</button>
-          <button style="cursor: pointer;" (click)="deleteProduct(product.id)">Delete Product</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+
+<div class="fw-bold fs-5" style="margin-bottom: 20px; text-align: center;">
+  <label for="filterCategory">Filter by Category: </label>
+  <select id="filterCategory" (change)="filterProducts($event)">
+    <option value="">All Categories</option>
+    <option *ngFor="let category of categories" [value]="category.name">{{category.name}}</option>
+  </select>
+</div>
+
+<br>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  <div *ngFor="let product of products$ | async" class="col">
+    <div class="card h-100">
+        <img src="{{product.imageUrl}}" class="card-img-top" style="width: 100%; height: 20vw; object-fit: cover;">
+        <div class="card-body">
+          <h5 class="card-title">{{product.name}}</h5>
+          <p class="card-subtitle mb-2  ">{{product.category}}</p>
+          <p class="card-text">Description: {{product.description}}</p>
+          <p class="card-text">Price: {{product.price}}</p>
+          <p class="card-text">Stock: {{product.stockQuantity}}</p>
+          <button class="btn btn-primary btn-sm" style="cursor: pointer;" (click)="editProduct(product)">Edit</button>
+          &nbsp;
+          <button class="btn btn-danger btn-sm" style="cursor: pointer;" (click)="deleteProduct(product.id)">Delete</button>
+        </div>
+    </div>
+  </div>
+</div>
+
