@@ -3,7 +3,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Subscription, Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { ConfirmPasswordValidator } from './confirm-password.validator';
+import { ConfirmPasswordValidator, strongPasswordValidator } from './confirm-password.validator';
 import { UserModel } from '../../models/user.model';
 import { first } from 'rxjs/operators';
 import { SharedService } from 'src/app/shared.service';
@@ -67,16 +67,14 @@ export class RegistrationComponent implements OnInit, OnDestroy {
           '',
           Validators.compose([
             Validators.required,
-            Validators.minLength(3),
-            Validators.maxLength(100),
+            strongPasswordValidator
           ]),
         ],
         cPassword: [
           '',
           Validators.compose([
             Validators.required,
-            Validators.minLength(3),
-            Validators.maxLength(100),
+            strongPasswordValidator
           ]),
         ],
         agree: [false, Validators.compose([Validators.required])],
