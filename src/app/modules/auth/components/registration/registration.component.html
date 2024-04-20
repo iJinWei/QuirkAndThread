@@ -190,7 +190,8 @@
       ></ngx-recaptcha2> -->
     <ngx-recaptcha2 #captchaElem
       [siteKey]="siteKey"
-      (captchaResponse)="handleRecaptchaSuccess($event)"
+      (success)="handleRecaptchaSuccess($event)"
+      (error)="handleRecaptchaError($event)"
       [size]="size"
       [hl]="lang"
       [theme]="theme"
