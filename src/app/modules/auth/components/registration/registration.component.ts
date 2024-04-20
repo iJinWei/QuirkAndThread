@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subscription, Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -7,6 +7,9 @@ import { ConfirmPasswordValidator, strongPasswordValidator } from './confirm-pas
 import { UserModel } from '../../models/user.model';
 import { first } from 'rxjs/operators';
 import { SharedService } from 'src/app/shared.service';
+import { ReCaptcha2Component } from 'ngx-captcha';
+import { environment } from 'src/environments/environment';
+import { RecaptchaService } from '../../services/recaptcha.service';
 
 @Component({
   selector: 'app-registration',
@@ -18,15 +21,30 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   hasError: boolean;
   isLoading$: Observable<boolean>;
 
+  siteKey: string;
+  @ViewChild('captchaElem') captchaElem: ReCaptcha2Component;
+  @ViewChild('langInput') langInput: ElementRef;
+
+  public theme : 'light'|'dark' = 'light'
+  public size : 'compact'|'normal' = 'normal'
+  public lang = 'en'
+  public type : 'image'|'audio' = 'image'
+
+
   // private fields
   private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
+  recaptchaError: string | null = null;
+  isSubmitting: boolean = false;
+  recaptchaResponse: string = '';
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private service:SharedService
+    private service:SharedService,
+    private recaptchaService: RecaptchaService,
   ) {
+    this.siteKey = environment.captcha.siteKey;
     this.isLoading$ = this.authService.isLoading$;
     // redirect to home if already logged in
     if (this.authService.currentUserValue) {
@@ -78,6 +96,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
           ]),
         ],
         agree: [false, Validators.compose([Validators.required])],
+        recaptcha: ['']
       },
       {
         validator: ConfirmPasswordValidator.MatchPassword,
@@ -145,6 +164,11 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   // }
 
   submit() {
+    const token = this.registrationForm?.get('recaptcha')?.value;
+    console.log("token:", typeof token)
+    console.log("token:", token)
+    this.verifyRecaptchaToken(token);
+    /*
     this.hasError = false;
     const result: { [key: string]: string } = {};
     Object.keys(this.f).forEach((key) => {
@@ -191,6 +215,30 @@ export class RegistrationComponent implements OnInit, OnDestroy {
       });
   
     this.unsubscribe.push(registrationSubscr);
+    */
+  }
+  
+  handleRecaptchaSuccess(token: any): void {
+    console.log('handleRecaptchaSuccess', token);
+    // this.recaptchaResponse = token;
+  }
+
+  handleRecaptchaError(error: any): void {
+    console.log('handleRecaptchaError', error);
+    this.recaptchaError = error;
+  }
+
+  private verifyRecaptchaToken(token: string): void {
+    this.recaptchaService.verifyRecaptcha(token)
+    .subscribe(valid => {
+      if (valid) {
+        // reCAPTCHA validation successful, proceed with form submission or other actions
+        console.log('reCAPTCHA validation successful');
+      } else {
+        // reCAPTCHA validation failed, display error message or take appropriate action
+        console.error('reCAPTCHA validation failed');
+      }
+    });
   }
   
   

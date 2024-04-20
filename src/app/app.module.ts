@@ -12,7 +12,7 @@ import { AppComponent } from './app.component';
 import { AuthService } from './modules/auth/services/auth.service';
 import { environment } from 'src/environments/environment';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
-// #fake-start#
+
 import { FakeAPIService } from './_fake/fake-api.service';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
@@ -20,7 +20,8 @@ import { SharedService } from './shared.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
-// #fake-end#
+import { NgxCaptchaModule } from 'ngx-captcha';
+
 
 // function appInitializer(authService: AuthService) {
 //   return () => {
@@ -64,6 +65,7 @@ function appInitializer(authService: AuthService) {
     provideFirestore(() => getFirestore()),
     AngularFireModule.initializeApp(environment.firebase), // Make sure you're passing the correct environment variable
     AngularFireAuthModule,
+    NgxCaptchaModule
   ],
   providers: [
     {

@@ -183,11 +183,29 @@
     </label>
   </div>
   <!--end::Form group-->
-
-  <!--begin::Form group-->
+  <div class="fv-row mb-8">
+    <!-- <ngx-recaptcha2 #captchaElem
+      [siteKey]="siteKey"
+      formControlName="recaptcha"
+      ></ngx-recaptcha2> -->
+    <ngx-recaptcha2 #captchaElem
+      [siteKey]="siteKey"
+      (captchaResponse)="handleRecaptchaSuccess($event)"
+      [size]="size"
+      [hl]="lang"
+      [theme]="theme"
+      [type]="type"
+      formControlName="recaptcha"
+      ></ngx-recaptcha2>
+      <div *ngIf="recaptchaError" class="error-message">
+        {{ recaptchaError }}
+      </div>
+  </div>
+  <!--begin::Form group registrationForm.invalid ||-->
   <div class="d-grid mb-10">
-    <button type="submit" id="kt_sign_up_submit" [disabled]="
-        registrationForm.invalid || !registrationForm.controls['agree'].value
+    <button type="submit" id="kt_sign_up_submit" 
+    [disabled]="registrationForm.invalid ||
+         !registrationForm.controls['agree'].value
       " class="btn btn-primary">
       <ng-container *ngIf="(isLoading$ | async) === false">
         <span class="indicator-label">Submit</span>
