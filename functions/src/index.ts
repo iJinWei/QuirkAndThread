@@ -23,14 +23,39 @@ import * as request from "request";
 
 admin.initializeApp();
 
+
+// To get firebase function configurations:
+// In terminal, cd to functions and run: firebase functions:config:get
+
 export const verifyRecaptcha = functions.https.onCall((data, context) => {
-  const secretKey = "6LdQ68ApAAAAAKqCEsYt-S4gugISRUwLpez3tHMp";
+  const localKey = functions.config().recaptcha.local_secret_key;
   const token = data.token;
 
   return new Promise((resolve, reject) => {
     request.post("https://www.google.com/recaptcha/api/siteverify", {
       form: {
-        secret: secretKey,
+        secret: localKey,
+        response: token,
+      },
+    }, (error, response, body) => {
+      if (error) {
+        reject(error);
+      } else {
+        const result = JSON.parse(body);
+        resolve(result.success);
+      }
+    });
+  });
+});
+
+export const verifyRecaptchaOnProd = functions.https.onCall((data, context) => {
+  const localKey = functions.config().recaptcha.prod_secret_key;
+  const token = data.token;
+
+  return new Promise((resolve, reject) => {
+    request.post("https://www.google.com/recaptcha/api/siteverify", {
+      form: {
+        secret: localKey,
         response: token,
       },
     }, (error, response, body) => {
