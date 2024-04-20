@@ -7,7 +7,8 @@ import { catchError, of } from 'rxjs';
   providedIn: 'root'
 })
 export class RecaptchaService {
-  private readonly functionUrl = 'https://us-central1-quirkandthread-a151e.cloudfunctions.net/verifyRecaptcha';
+  // private readonly functionUrl = 'https://us-central1-quirkandthread-a151e.cloudfunctions.net/verifyRecaptcha';
+  private readonly functionUrl = environment.captcha.cloudFunctionUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -31,18 +32,4 @@ export class RecaptchaService {
       })
     );
   }
-
-  // verifyToken(token: string): Promise<boolean> {
-  //   const params = new HttpParams();
-  //   params.set('secret', this.SECRET_KEY);
-  //   params.set('response', token);
-
-  //   return this.http.post<any>(this.RECAPTCHA_VERIFY_URL, null, { params })
-  //     .toPromise()
-  //     .then(response => response.success)
-  //     .catch(error => {
-  //       console.error('Error verifying reCAPTCHA:', error);
-  //       return false;
-  //     });
-  // }
 }

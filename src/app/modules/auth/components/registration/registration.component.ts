@@ -21,20 +21,19 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   hasError: boolean;
   isLoading$: Observable<boolean>;
 
+  // For captcha
   siteKey: string;
   @ViewChild('captchaElem') captchaElem: ReCaptcha2Component;
-
   public theme : 'light'|'dark' = 'light'
   public size : 'compact'|'normal' = 'normal'
   public lang = 'en'
   public type : 'image'|'audio' = 'image'
-
+  recaptchaToken: string = '';
+  recaptchaError: string | null = null;
 
   // private fields
   private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
-  recaptchaError: string | null = null;
-  isSubmitting: boolean = false;
-  recaptchaToken: string = '';
+  
 
   constructor(
     private fb: FormBuilder,
@@ -187,8 +186,6 @@ export class RegistrationComponent implements OnInit, OnDestroy {
                   lastLogin: new Date(), // Consider updating this field upon each login
                   roles: ["customer"], // Default role
                 };
-                console.log("userData: ", userData)
-                console.log("firebaseUser.uid: ", firebaseUser.uid)
                 // Add user data to Firestore (assumes SharedService or similar is injected as sharedService)
                 this.service.addUser(firebaseUser.uid, userData).then(() => {
                   console.log("adding user")
@@ -227,54 +224,14 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     
   }
 
-  // onSubmit() {
-  //   this.verifyRecaptchaToken()
-  //   .pipe(
-  //     concatMap(valid => {
-  //       if (valid) {
-  //         // reCAPTCHA validation successful, proceed with form submission or other actions
-  //         console.log('reCAPTCHA validation successful');
-  //         // Return the result of the submission logic
-  //         this.submit()
-  //         return of(true);
-  //       } else {
-  //         // reCAPTCHA validation failed, display error message or take appropriate action
-  //         console.error('reCAPTCHA validation failed');
-  //         // Return an Observable with false value
-  //         return of(false);
-  //       }
-  //     })
-  //   )
-  //   .subscribe(submissionResult => {
-  //     if (submissionResult) {
-  //       // Form submission successful
-  //       console.log('Form submitted successfully');
-  //     } else {
-  //       // Form submission failed due to reCAPTCHA validation failure
-  //       console.error('Form submission failed due to reCAPTCHA validation failure');
-  //     }
-  //   });
-  // }
-  
   handleRecaptchaSuccess(token: any): void {
-    console.log('handleRecaptchaSuccess', token);
     this.recaptchaToken = token;
   }
 
   handleRecaptchaError(error: any): void {
-    console.log('handleRecaptchaError', error);
+    console.error('Handled', error);
     this.recaptchaError = error;
   }
-
-  handleRecaptchaReset(): void {
-    // if (this.captchaElem) {
-    //    this.captchaElem.resetCaptcha()
-    // }
-  }
-
-  // private verifyRecaptchaToken(): Observable<boolean> {
-  //   return this.recaptchaService.verifyRecaptcha(this.recaptchaToken);
-  // }
   
   async verifyCaptchaToken(): Promise<boolean> {
     try {
