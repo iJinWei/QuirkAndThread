@@ -21,20 +21,43 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as request from "request";
 
+import {SecretManagerServiceClient} from "@google-cloud/secret-manager";
+// const projectId = "quirkandthread-a151e";
+const projectId = "437738972765";
 admin.initializeApp();
 
+/**
+ * Get secret value
+ * @param {string} keyName - name of key
+ */
+async function getSecret(keyName: string) {
+  // Create a Secret Manager client
+  const client = new SecretManagerServiceClient();
+  const name = `projects/${projectId}/secrets/${keyName}/versions/latest`;
 
-// To get firebase function configurations:
-// In terminal, cd to functions and run: firebase functions:config:get
+  try {
+    // Fetch the secret
+    const [version] = await client.accessSecretVersion({name});
 
-export const verifyRecaptcha = functions.https.onCall((data, context) => {
-  const localKey = functions.config().recaptcha.local_secret_key;
+    // Get the payload data
+    const payload = version.payload?.data?.toString();
+
+    return payload;
+  } catch (error) {
+    console.error("Error accessing secret:", error);
+    throw error;
+  }
+}
+
+exports.verifyRecaptcha = functions.https.onCall(async (data, context) => {
+  // const key = functions.config().recaptcha.local_secret_key;
+  // Retrieve the secret key from Google Cloud Secret Manager
+  const key = await getSecret("RECAPTCHA_LOCAL_KEY");
   const token = data.token;
-
   return new Promise((resolve, reject) => {
     request.post("https://www.google.com/recaptcha/api/siteverify", {
       form: {
-        secret: localKey,
+        secret: key,
         response: token,
       },
     }, (error, response, body) => {
@@ -48,14 +71,16 @@ export const verifyRecaptcha = functions.https.onCall((data, context) => {
   });
 });
 
-export const verifyRecaptchaOnProd = functions.https.onCall((data, context) => {
-  const localKey = functions.config().recaptcha.prod_secret_key;
+export const verifyRecaptchaOnProd = functions.https.onCall(async (data, context) => {
+  // const key = functions.config().recaptcha.prod_secret_key;
+  // Retrieve the secret key from Google Cloud Secret Manager
+  const key = await getSecret("RECAPTCHA_PROD_KEY");
   const token = data.token;
 
   return new Promise((resolve, reject) => {
     request.post("https://www.google.com/recaptcha/api/siteverify", {
       form: {
-        secret: localKey,
+        secret: key,
         response: token,
       },
     }, (error, response, body) => {
