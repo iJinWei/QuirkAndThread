@@ -164,6 +164,12 @@ export const environment = {
     messagingSenderId: "437738972765",
     appId: "1:437738972765:web:bddc95ac17587c33098fb4",
     measurementId: "G-GHPGH1HG1F",
+  },
+
+  captcha: {
+    siteKey: "6LflWcEpAAAAAKPLs5XTe4575faLtmujHjH6kJn-",
+    secretKey: "6LflWcEpAAAAAA_QXcEzq2ioQCZHhpnYRszFKA4h",
+    cloudFunctionUrl: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/verifyRecaptchaOnProd"
   }
 };
 

@@ -1,0 +1,16 @@
+on: [push]
+
+jobs:
+  soos_dast_analysis_example:
+    name: SOOS DAST Analysis Example
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run SOOS DAST Analysis
+        uses: soos-io/soos-dast-github-action@v2
+        with:
+          client_id: "3dcfkox96"
+          api_key: "YWYyNjA1MmItODZkNi00OWRkLWIzN2UtZmQzZWIyMzlhZDVi"
+          project_name: "DAST-GitHub-Action-Test"
+          scan_mode: "baseline"
+          api_url: "https://api.soos.io/api/"
+          target_url: "https://quirkandthread-a151e.web.app/"
