@@ -9,7 +9,7 @@ import { concatMap, first, switchMap } from 'rxjs/operators';
 import { SharedService } from 'src/app/shared.service';
 import { ReCaptcha2Component } from 'ngx-captcha';
 import { environment } from 'src/environments/environment';
-import { RecaptchaService } from '../../services/recaptcha.service';
+import { AuthCloudService } from '../../services/auth-cloud.service';
 import { FormValidationService } from 'src/app/pages/form-validation.service';
 
 @Component({
@@ -41,7 +41,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private service:SharedService,
-    private recaptchaService: RecaptchaService,
+    private authCloudService: AuthCloudService,
     private validationService: FormValidationService
   ) {
     this.siteKey = environment.captcha.siteKey;
@@ -250,7 +250,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   
   async verifyCaptchaToken(): Promise<boolean> {
     try {
-      const valid = await this.recaptchaService.verifyRecaptcha(this.recaptchaToken).toPromise();
+      const valid = await this.authCloudService.verifyRecaptcha(this.recaptchaToken).toPromise();
       return !!valid;
     } catch (error) {
       console.error("reCAPTCHA verification error:", error);
