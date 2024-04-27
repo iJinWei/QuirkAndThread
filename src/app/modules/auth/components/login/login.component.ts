@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ReCaptcha2Component } from 'ngx-captcha';
 import { environment } from 'src/environments/environment';
 import { RecaptchaService } from '../../services/recaptcha.service';
+import { FormValidationService } from 'src/app/pages/form-validation.service';
 
 @Component({
   selector: 'app-login',
@@ -45,7 +46,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
-    private recaptchaService: RecaptchaService
+    private recaptchaService: RecaptchaService,
+    private validationService: FormValidationService
   ) {
     this.siteKey = environment.captcha.siteKey;
     this.isLoading$ = this.authService.isLoading$;
@@ -107,46 +109,61 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   // Firebase
   submit() {
-    this.verifyCaptchaToken().then(valid => {
-      if (valid) {
-        this.hasError = false;
-        this.loginErrorMessage = '';
-        const loginSubscr = this.authService
-          .loginFirebase(this.f.email.value, this.f.password.value)
-          .pipe(first())
-          .subscribe({
-            next: (user) => {
-              if (user && user.emailVerified) {
-                this.router.navigate([this.returnUrl]);
-              } else if (user && !user.emailVerified) {
-                this.hasError = true;
-                this.loginErrorMessage =
-                  'Please verify your email before logging in.';
-              } else {
-                this.hasError = true;
-                this.loginErrorMessage =
-                  'Login failed. Please check your email and password.';
-              }
-            },
-            error: (err) => {
+    if (this.loginForm.valid) {
+      const formData = this.loginForm.value;
+      this.validationService.validateLoginForm(formData).subscribe(
+        (response) => {
+          this.verifyCaptchaToken().then(valid => {
+            if (valid) {
+              this.hasError = false;
+              this.loginErrorMessage = '';
+              const loginSubscr = this.authService
+                .loginFirebase(this.f.email.value, this.f.password.value)
+                .pipe(first())
+                .subscribe({
+                  next: (user) => {
+                    if (user && user.emailVerified) {
+                      this.router.navigate([this.returnUrl]);
+                    } else if (user && !user.emailVerified) {
+                      this.hasError = true;
+                      this.loginErrorMessage =
+                        'Please verify your email before logging in.';
+                    } else {
+                      this.hasError = true;
+                      this.loginErrorMessage =
+                        'Login failed. Please check your email and password.';
+                    }
+                  },
+                  error: (err) => {
+                    this.hasError = true;
+                    console.error(err);
+                    alert(`Login failed: ${err.message}`);
+                  },
+                });
+      
+              this.unsubscribe.push(loginSubscr);
+            } else {
+              // reCAPTCHA validation failed
               this.hasError = true;
-              console.error(err);
-              alert(`Login failed: ${err.message}`);
-            },
+              alert('reCAPTCHA validation failed. Please try again.');
+            }
+          }).catch(error => {
+            // Handle reCAPTCHA service error
+            this.hasError = true;
+            console.error(error);
+            alert(`reCAPTCHA verification failed: ${error.message}`);
           });
+        },
+        (error) => {
+          console.error('Invalid Form', error);
+          alert('Error registering user. Please try again.');
+        }
+      )
+    } else{
+      console.error('Invalid Form');
+      alert('Error registering user. Please try again.');
+    }
 
-        this.unsubscribe.push(loginSubscr);
-      } else {
-        // reCAPTCHA validation failed
-        this.hasError = true;
-        alert('reCAPTCHA validation failed. Please try again.');
-      }
-    }).catch(error => {
-      // Handle reCAPTCHA service error
-      this.hasError = true;
-      console.error(error);
-      alert(`reCAPTCHA verification failed: ${error.message}`);
-    });
   }
 
   handleRecaptchaSuccess(token: any): void {
