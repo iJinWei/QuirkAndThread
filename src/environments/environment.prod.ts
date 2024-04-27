@@ -176,6 +176,9 @@ export const environment = {
     editOrder: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateEditOrderForm",
     registration: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateRegistrationForm",
     login:"https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateLoginForm"
+  },
+  auth: {
+    checkUserRole:"https://us-central1-quirkandthread-a151e.cloudfunctions.net/checkUserRole"
   }
 };
 

@@ -7,7 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReCaptcha2Component } from 'ngx-captcha';
 import { environment } from 'src/environments/environment';
-import { RecaptchaService } from '../../services/recaptcha.service';
+import { AuthCloudService } from '../../services/auth-cloud.service';
 import { FormValidationService } from 'src/app/pages/form-validation.service';
 
 @Component({
@@ -46,7 +46,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
-    private recaptchaService: RecaptchaService,
+    private authCloudService: AuthCloudService,
     private validationService: FormValidationService
   ) {
     this.siteKey = environment.captcha.siteKey;
@@ -123,7 +123,18 @@ export class LoginComponent implements OnInit, OnDestroy {
                 .subscribe({
                   next: (user) => {
                     if (user && user.emailVerified) {
-                      this.router.navigate([this.returnUrl]);
+                      this.authCloudService.checkUserRoleFromCloud(user).subscribe(
+                        (response) => {
+                          this.router.navigate([this.returnUrl]);
+                        },
+                        (error) => {
+                          this.hasError = true;
+                          this.loginErrorMessage = 'Access denied.';
+                          console.error("Access Denied", error);
+                          alert(`Access Denied`);
+                        }
+                      )
+                      
                     } else if (user && !user.emailVerified) {
                       this.hasError = true;
                       this.loginErrorMessage =
@@ -156,12 +167,12 @@ export class LoginComponent implements OnInit, OnDestroy {
         },
         (error) => {
           console.error('Invalid Form', error);
-          alert('Error registering user. Please try again.');
+          alert('Error logging in user. Please try again.');
         }
       )
     } else{
       console.error('Invalid Form');
-      alert('Error registering user. Please try again.');
+      alert('Error logging in user. Please try again.');
     }
 
   }
@@ -177,7 +188,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   
   async verifyCaptchaToken(): Promise<boolean> {
     try {
-      const valid = await this.recaptchaService.verifyRecaptcha(this.recaptchaToken).toPromise();
+      const valid = await this.authCloudService.verifyRecaptcha(this.recaptchaToken).toPromise();
       return !!valid;
     } catch (error) {
       console.error("reCAPTCHA verification error:", error);

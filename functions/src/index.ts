@@ -288,3 +288,39 @@ function strongPasswordValidator(password: string) : boolean {
   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#$%])[A-Za-z\d@!#$%]{8,}$/;
   return regex.test(password);
 }
+
+
+exports.checkUserRole = functions.https.onCall(async (data, context) => {
+  const uid = data.id;
+
+  try {
+    // Get the user document from Firestore
+    const userDoc = await admin.firestore().collection("users").doc(uid).get();
+
+    // Check if the user document exists
+    if (!userDoc.exists) {
+      throw new functions.https.HttpsError("not-found", "User document not found.");
+    }
+
+    // Get the user data
+    const userData = userDoc.data();
+
+    // Check if the user has admin or logistic role
+    if (!userData) {
+      throw new functions.https.HttpsError("not-found", "User details not found.");
+    } else {
+      if (!userData.roles || (!userData.roles.includes("admin") &&
+        !userData.roles.includes("logistic"))) {
+        throw new functions.https.HttpsError("permission-denied",
+          "Access denied for this user.");
+      }
+    }
+
+
+    // User has admin or logistic role
+    return {message: "User has admin or logistic role."};
+  } catch (error) {
+    console.error("Error checking user role:", error);
+    throw new functions.https.HttpsError("internal", "Error checking user role.");
+  }
+});

@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { catchError, of } from 'rxjs';
+import { Observable, catchError, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class RecaptchaService {
+export class AuthCloudService {
   // private readonly functionUrl = 'https://us-central1-quirkandthread-a151e.cloudfunctions.net/verifyRecaptcha';
-  private readonly functionUrl = environment.captcha.cloudFunctionUrl;
+  private readonly recaptchaUrl = environment.captcha.cloudFunctionUrl;
+  private readonly userRoleUrl = environment.auth.checkUserRole;
 
   constructor(private http: HttpClient) {}
+
 
   verifyRecaptcha(token: string) {
     const data = {
@@ -21,7 +23,7 @@ export class RecaptchaService {
 
     const jsonData = JSON.stringify(data);
 
-    return this.http.post<boolean>(this.functionUrl, jsonData, {
+    return this.http.post<boolean>(this.recaptchaUrl, jsonData, {
       headers: {
         'Content-Type': 'application/json'
       }
@@ -31,5 +33,17 @@ export class RecaptchaService {
         return of(false); // Return false in case of error
       })
     );
+  }
+
+  checkUserRoleFromCloud(user: any): Observable<any> {
+    const data = {
+      data: user
+    };
+
+    const jsonData = JSON.stringify(data);
+    return this.http.post<boolean>(this.userRoleUrl, jsonData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }});
   }
 }
