@@ -178,6 +178,10 @@ export const environment = {
     siteKey: "6LdQ68ApAAAAAAHFzJn0xAqO47qBEgT_AK0K8u1J",
     secretKey: "6LdQ68ApAAAAAKqCEsYt-S4gugISRUwLpez3tHMp",
     cloudFunctionUrl: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/verifyRecaptcha"
+  },
+  formValidation: {
+    product: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateProductForm",
+    editOrder: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateEditOrderForm"
   }
 };
 

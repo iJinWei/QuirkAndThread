@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { IOrderItem } from 'src/app/modules/models/order-item.model';
 import { AuthService } from 'src/app/modules/auth';
 import { User, IUser } from 'src/app/modules/models/user.model';
+import { FormValidationService } from '../../form-validation.service';
 
 
 @Component({
@@ -31,7 +32,8 @@ export class OrderDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private validationService: FormValidationService
   ) {}
 
   order$: Observable<IOrder>;
@@ -172,19 +174,27 @@ export class OrderDetailsComponent implements OnInit {
     if (this.isAdmin || (this.isLogistic && this.orderAssignedToThisLogistic)) {
       if (this.editOrderForm.valid) {
         const orderData = this.editOrderForm.value;
-        order.deliveryPersonnelId = orderData.deliveryPersonnel;
-        order.orderStatus = orderData.orderStatus;
-        order.deliveryStatus = orderData.deliveryStatus;
+        this.validationService.validateEditOrderForm(orderData).subscribe(
+          (response) => {
+            order.deliveryPersonnelId = orderData.deliveryPersonnel;
+            order.orderStatus = orderData.orderStatus;
+            order.deliveryStatus = orderData.deliveryStatus;
 
-        this.service.updateOrder(order.id, order).then(() => {
-          console.log('Order updated successfully');
-          this.resetForm();
-          this.toggleEditMode(order);
-          this.back();
-        }).catch(error => {
-          console.error('Error updating order:', error);
-          this.displayErrorAlert('Error in updating order. Please try again later.');
-        });
+            this.service.updateOrder(order.id, order).then(() => {
+              console.log('Order updated successfully');
+              this.resetForm();
+              this.toggleEditMode(order);
+              this.back();
+            }).catch(error => {
+              console.error('Error updating order:', error);
+              this.displayErrorAlert('Error in updating order. Please try again later.');
+            });
+          }, 
+          (error) => {
+            console.error('Invalid Form1', error);
+            this.displayErrorAlert('Error saving product. Please try again.');
+          }
+        )
       } else {
         this.displayErrorAlert('Invalid form.');
       }
