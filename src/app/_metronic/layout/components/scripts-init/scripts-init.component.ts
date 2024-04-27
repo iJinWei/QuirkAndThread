@@ -32,7 +32,7 @@ export class ScriptsInitComponent implements OnInit, OnDestroy {
         this.pageInfo.calculateBreadcrumbs();
 
         this.pageInfo.title.asObservable().subscribe((title) => {
-          this.titleService.setTitle(title + ' - Metronic');
+          this.titleService.setTitle(title + ' - Quirk And Thread');
         });
       }, 10);
     };
