@@ -212,3 +212,79 @@ export const validateEditOrderForm = functions.https.onCall(async (data, context
   // If all validations pass, return a success message
   return {message: "Validation successful"};
 });
+
+
+exports.validateLoginForm = functions.https.onCall((data, context) => {
+  const {email, password, recaptcha} = data;
+
+  // Perform server-side validation
+  if (!email || typeof email !== "string" || email.length < 3 || email.length > 320 ||
+    !isValidEmail(email)) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid email");
+  }
+
+  if (!password || typeof password !== "string" || password.length < 3 || password.length > 100) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid password");
+  }
+
+  if (!recaptcha) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid recaptcha");
+  }
+
+  // If all validations pass, return a success message
+  return {message: "Validation successful"};
+});
+
+exports.validateRegistrationForm = functions.https.onCall(async (data, context) => {
+  const {fullname, email, password, cPassword, agree, recaptcha} = data;
+
+  // Perform server-side validation
+  if (!fullname || typeof fullname !== "string" || fullname.length < 3 || fullname.length > 100) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid fullname");
+  }
+
+  if (!email || typeof email !== "string" || email.length < 3 || email.length > 320 ||
+    !isValidEmail(email)) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid email");
+  }
+
+  if (!password || typeof password !== "string" || password.length < 8 ||
+    !strongPasswordValidator(password)) {
+    throw new functions.https.HttpsError("invalid-argument", "Weak password");
+  }
+
+  if (password !== cPassword) {
+    throw new functions.https.HttpsError("invalid-argument", "Passwords do not match");
+  }
+
+  if (!agree) {
+    throw new functions.https.HttpsError("invalid-argument", "Required");
+  }
+
+  if (!recaptcha) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid recaptcha");
+  }
+
+  // If validation passes, return success
+  return {message: "Validation successful"};
+});
+
+/**
+ * Validate email
+ * @param {string} email
+ * @return {boolean}
+ */
+function isValidEmail(email: string) : boolean {
+  // Regular expression for basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+/**
+ * Validate password
+ * @param {string} password
+ * @return {boolean}
+ */
+function strongPasswordValidator(password: string) : boolean {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#$%])[A-Za-z\d@!#$%]{8,}$/;
+  return regex.test(password);
+}

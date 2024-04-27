@@ -174,7 +174,9 @@ export const environment = {
 
   formValidation: {
     product: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateProductForm",
-    editOrder: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateEditOrderForm"
+    editOrder: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateEditOrderForm",
+    registration: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateRegistrationForm",
+    login:"https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateLoginForm"
   }
 };
 
