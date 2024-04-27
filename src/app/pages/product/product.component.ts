@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { AuthService } from 'src/app/modules/auth';
 import { ImageUrlValidator, NumberValidator, PriceValidator } from '../validators';
+import { FormValidationService } from '../form-validation.service';
 
 @Component({
   selector: 'app-product',
@@ -19,7 +20,13 @@ export class ProductComponent implements OnInit {
   };
   @ViewChild('modal') private modalComponent: ModalComponent;
   @ViewChild('productFormElem') productFormElem: ElementRef  | undefined;
-  constructor(private service:SharedService, private fb: FormBuilder, private authService:AuthService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private service:SharedService, 
+    private fb: FormBuilder, 
+    private authService:AuthService, 
+    private cdr: ChangeDetectorRef,
+    private validationService: FormValidationService
+  ) {}
 
   products$: Observable<any[]>;
   productForm: FormGroup;
@@ -39,6 +46,7 @@ export class ProductComponent implements OnInit {
 
     this.productForm = this.fb.group({
       category: ['', Validators.required],
+      categoryId: ['', Validators.required],
       description: ['', [Validators.required, Validators.maxLength(100)]],
       imageUrl: ['', [Validators.required, ImageUrlValidator()] ], // imageUrl: only accepts valid url with extensions 'jpg', 'jpeg', 'png', 'gif'
       name: ['', [Validators.required, Validators.maxLength(30)]],
@@ -103,6 +111,7 @@ export class ProductComponent implements OnInit {
     // Assuming your form is named productForm and you want to fill it with product data for editing
     this.productForm.setValue({
       category: product.category || '', // Use || '' to avoid errors if any field is undefined
+      categoryId: product.categoryId || '',
       description: product.description || '',
       imageUrl: product.imageUrl || '',
       name: product.name || '',
@@ -127,25 +136,33 @@ export class ProductComponent implements OnInit {
       } else {
         if (this.productForm.valid) {
           const productData = this.productForm.value;
-          if (this.editingProductId) {
-            this.service.updateProduct(this.editingProductId, productData).then(() => {
-              console.log('Product updated successfully');
-              this.resetForm();
-            }).catch(error => {
-              console.error('Error updating product:', error);
-              this.displayErrorAlert('Error updating product. Please try again.');
-            });
-          } else {
-            this.service.addProduct(productData).then(() => {
-              console.log('Product added successfully');
-              this.resetForm();
-            }).catch(error => {
-              console.error('Error adding product:', error);
-              this.displayErrorAlert('Error adding product. Please try again.');
-            });
-          }
+          this.validationService.validateProductForm(productData).subscribe(
+            (response) => {
+              if (this.editingProductId) {
+                this.service.updateProduct(this.editingProductId, productData).then(() => {
+                  console.log('Product updated successfully');
+                  this.resetForm();
+                }).catch(error => {
+                  console.error('Error updating product:', error);
+                  this.displayErrorAlert('Error updating product. Please try again.');
+                });
+              } else {
+                this.service.addProduct(productData).then(() => {
+                  console.log('Product added successfully');
+                  this.resetForm();
+                }).catch(error => {
+                  console.error('Error adding product:', error);
+                  this.displayErrorAlert('Error adding product. Please try again.');
+                });
+              }
+            }, 
+            (error) => {
+              console.error('Invalid Form1', error);
+              this.displayErrorAlert('Error saving product. Please try again.');
+            }
+          )
         } else {
-          console.error('Invalid Form');
+          console.error('Invalid Form', this.productForm.errors);
           this.displayErrorAlert('Error saving product. Please try again.');
         }
       }
@@ -193,6 +210,15 @@ export class ProductComponent implements OnInit {
     this.showAlert(message);
     this.cdr.detectChanges(); 
     console.log('errorMessage: ' + message);
+  }
+
+  onCategoryChange(event: any) {
+    const selectedValue = event.target.value;
+    // Update the value of categoryId FormControl when the dropdown selection changes
+    const selectedCategory = this.categories.find(category => category.name === selectedValue);
+    
+    // Update the value of categoryId FormControl with the corresponding ID
+    this.productForm?.get('categoryId')?.setValue(selectedCategory ? selectedCategory.id : '');
   }
 
 }

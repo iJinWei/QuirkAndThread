@@ -14,12 +14,13 @@
           </div>
         </div>
       </div>
+      <input type="hidden" formControlName="categoryId">
       <div class="mb-3 row">
         <label for="category" class="col-sm-2 form-label">Category:</label>
         <div class="col-sm-10">
-          <select id="category" formControlName="category" style="width: calc(100% - 10px);">
+          <select id="category" formControlName="category" style="width: calc(100% - 10px);"  (change)="onCategoryChange($event)">
             <option value="">Select a category</option>
-            <option *ngFor="let category of categories" [value]="category.name">{{category.name}}</option>
+            <option *ngFor="let category of categories" [value]="category.name" >{{category.name}}</option>
           </select>
           <div *ngIf="productForm.get('category')?.invalid && (productForm.get('category')?.dirty || productForm.get('category')?.touched)" class="text-danger">
             <div *ngIf="productForm.get('category')?.errors?.['required']">Category is required.</div>
