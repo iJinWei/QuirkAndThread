@@ -161,7 +161,7 @@ export class OrderDetailsComponent implements OnInit {
         deliveryStatus: order.deliveryStatus || ''
       })
 
-      if (this.isLogistic && this.isAdmin) {
+      if (this.isLogistic && !this.isAdmin) {
         this.editOrderForm.get('orderStatus')?.disable();
         this.editOrderForm.get('deliveryPersonnel')?.disable();
       }
@@ -185,7 +185,7 @@ export class OrderDetailsComponent implements OnInit {
               console.log('Order updated successfully');
               this.resetForm();
               this.toggleEditMode(order);
-              this.back();
+              // this.back();
             }).catch(error => {
               console.error('Error updating order:', error);
               this.displayErrorAlert('Error in updating order. Please try again later.');
