@@ -18,15 +18,18 @@ import {
 import { Observable, catchError, combineLatest, map, switchMap } from 'rxjs';
 import { IOrder } from './modules/models/order.model';
 import { IOrderItem } from './modules/models/order-item.model';
-import { DataTablesResponse, IUser, User } from './modules/models/user.model';
+import { DataTablesResponse, IUser, IUserRole, User } from './modules/models/user.model';
 import { IRole } from './modules/models/role.model';
 import moment from 'moment';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SharedService {
-  constructor(private fs: Firestore) {}
+  constructor(private fs: Firestore,
+    private firestore: AngularFirestore
+  ) { }
 
   // Product Firestore Methods
   getCategories() {
@@ -105,7 +108,7 @@ export class SharedService {
     querySnapshot.forEach(async (doc) => {
       try {
         await deleteDoc(doc.ref);
-      } catch (error) {}
+      } catch (error) { }
     });
     return deleteDoc(docRef);
   }
@@ -179,44 +182,8 @@ export class SharedService {
     return docData(docRef) as Observable<IUser>;
   }
 
-  getUsers(): Observable<DataTablesResponse> {
-    let usersCollection = collection(this.fs, 'users');
-
-    // Get the roles data
-    let usersData = collectionData(usersCollection, { idField: 'id' });
-
-    return usersData.pipe(
-      map((data) => {
-        const rows: User[] = data.map((user) => {
-          const formattedJoinDate = this.getFormattedDate(
-            user.joinDate.seconds,
-            user.joinDate.nanoseconds
-          );
-
-          const formatttedLastLogin = this.getFormattedDate(
-            user.lastLogin.seconds,
-            user.lastLogin.nanoseconds
-          );
-
-          return {
-            email: user.email,
-            joinDate: formattedJoinDate,
-            lastLogin: formatttedLastLogin,
-            name: user.name,
-            uid: user.uid,
-          };
-        });
-
-        const response: DataTablesResponse = {
-          draw: 1,
-          recordsTotal: data.length,
-          recordsFiltered: data.length,
-          data: rows,
-        };
-
-        return response;
-      })
-    );
+  getUsers(): Observable<IUserRole[]> {
+    return this.firestore.collection<IUserRole>('users').valueChanges();
   }
 
   getUsersByRole(role: string): Observable<DataTablesResponse> {
@@ -273,6 +240,15 @@ export class SharedService {
     const userResult = snapshot.docs[0].data();
 
     return [userResult];
+  }
+
+  updateUserRoles(uid: string, roles: string[]): Promise<void> {
+    const userDoc = this.firestore.collection('users').doc(uid);
+
+    // Update the roles field in Firestore
+    return userDoc.update({ roles })
+      .then(() => console.log('User roles updated successfully.'))
+      .catch((error) => console.error('Error updating user roles:', error));
   }
 
   async updateLastLogin(uid: string) {

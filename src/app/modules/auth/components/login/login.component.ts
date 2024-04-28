@@ -163,7 +163,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       console.error('Invalid Form');
       alert('Error registering user. Please try again.');
     }
-
   }
 
   handleRecaptchaSuccess(token: any): void {

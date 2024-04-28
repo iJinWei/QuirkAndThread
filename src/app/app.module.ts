@@ -19,6 +19,7 @@ import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { SharedService } from './shared.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { NgxCaptchaModule } from 'ngx-captcha';
 
@@ -64,6 +65,7 @@ function appInitializer(authService: AuthService) {
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideFirestore(() => getFirestore()),
     AngularFireModule.initializeApp(environment.firebase), // Make sure you're passing the correct environment variable
+    AngularFirestoreModule,
     AngularFireAuthModule,
     NgxCaptchaModule
   ],

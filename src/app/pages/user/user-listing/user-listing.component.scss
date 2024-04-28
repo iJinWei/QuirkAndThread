@@ -1,0 +1,18 @@
+.role-tags {
+    display: flex;
+    /* Arrange tags horizontally */
+    flex-wrap: wrap;
+    /* Allow wrapping if needed */
+}
+
+.role-tag {
+    background-color: #f0f0f0;
+    /* Light gray background */
+    padding: 5px 10px;
+    /* Padding for tag */
+    border-radius: 5px;
+    /* Rounded corners */
+    margin-right: 5px;
+    /* Space between tags */
+    text-transform: uppercase;
+}

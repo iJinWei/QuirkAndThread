@@ -4,6 +4,8 @@ import { LayoutType } from '../../../core/configs/config';
 import { LayoutInitService } from '../../../core/layout-init.service';
 import { LayoutService } from '../../../core/layout.service';
 import { AuthService } from 'src/app/modules/auth';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { SharedService } from 'src/app/shared.service';
 
 @Component({
   selector: 'app-header-menu',
@@ -16,18 +18,37 @@ export class HeaderMenuComponent implements OnInit {
     private layout: LayoutService,
     private layoutInit: LayoutInitService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private sharedService: SharedService,
+    private angularFireAuth: AngularFireAuth
+  ) { }
 
   isAdmin: boolean;
   isLogistic: boolean;
-  isCustomer: boolean;
+
+  adminRole = "admin";
+  logisticRole = "logistic";
+
+  userId: string;
+  userRoles: string[] = [];
 
   async ngOnInit(): Promise<void> {
-    this.isAdmin = await this.authService.canPerformAction('admin');
-    this.isLogistic = await this.authService.canPerformAction('logistic');
-    this.isCustomer = await this.authService.canPerformAction('customer');
-    this.cdr.detectChanges(); // Manually trigger change detection
+    this.angularFireAuth.authState.subscribe((user) => {
+      if (user) {
+        this.userId = user.uid;
+      }
+      this.sharedService.getUserDetails(this.userId).then((results) => {
+        if (results[0] != undefined) {
+          this.userRoles = results[0].roles;
+          console.log(this.userRoles);
+
+          this.isAdmin = this.userRoles.includes(this.adminRole);
+          this.isLogistic = this.userRoles.includes(this.logisticRole);
+          this.cdr.detectChanges();
+        }
+      }
+      )
+    })
   }
 
   calculateMenuItemCssClass(url: string): string {
