@@ -17,7 +17,6 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, catchError, combineLatest, map, switchMap } from 'rxjs';
 import { IOrder } from './modules/models/order.model';
-import { IOrderItem } from './modules/models/order-item.model';
 import { DataTablesResponse, IUser, IUserRole, User } from './modules/models/user.model';
 import { IRole } from './modules/models/role.model';
 import moment from 'moment';
@@ -96,46 +95,14 @@ export class SharedService {
     return addDoc(ordersCollection, order);
   }
 
-  async deleteOrder(id: string) {
+  deleteOrder(id: string) {
     let docRef = doc(this.fs, 'orders/' + id);
-    let orderItemsCollection = collection(this.fs, 'orderItems');
-    const q = query(orderItemsCollection, where('orderId', '==', id));
-
-    // Get documents based on the query
-    const querySnapshot = await getDocs(q);
-
-    // Delete each document
-    querySnapshot.forEach(async (doc) => {
-      try {
-        await deleteDoc(doc.ref);
-      } catch (error) { }
-    });
     return deleteDoc(docRef);
   }
 
   updateOrder(id: string, order: any) {
     let docRef = doc(this.fs, 'orders', id);
     return updateDoc(docRef, order);
-  }
-
-  addOrderItem(orderItem: any) {
-    let orderItemsCollection = collection(this.fs, 'orderItems');
-    return addDoc(orderItemsCollection, orderItem);
-  }
-
-  updateOrderItem(id: string, orderItem: any) {
-    let docRef = doc(this.fs, 'orderItems', id);
-    return updateDoc(docRef, orderItem);
-  }
-
-  deleteOrderItem(id: string) {
-    let docRef = doc(this.fs, 'orderItems', id);
-    return deleteDoc(docRef);
-  }
-
-  getOrderItemById(id: string) {
-    const docRef = doc(this.fs, 'orderItems', id);
-    return docData(docRef, { idField: 'id' }) as Observable<IOrderItem>;
   }
 
   // get all delivery personnel that is not superuser and has 'logistic' role
