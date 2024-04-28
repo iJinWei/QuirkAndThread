@@ -176,7 +176,6 @@ export const environment = {
   captcha: {
     // localhost
     siteKey: "6LdQ68ApAAAAAAHFzJn0xAqO47qBEgT_AK0K8u1J",
-    secretKey: "6LdQ68ApAAAAAKqCEsYt-S4gugISRUwLpez3tHMp",
     cloudFunctionUrl: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/verifyRecaptcha"
   },
   formValidation: {
@@ -184,6 +183,9 @@ export const environment = {
     editOrder: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateEditOrderForm",
     registration: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateRegistrationForm",
     login:"https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateLoginForm"
+  },
+  auth: {
+    checkUserRole:"https://us-central1-quirkandthread-a151e.cloudfunctions.net/checkUserRole"
   }
 };
 
