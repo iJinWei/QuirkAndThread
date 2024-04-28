@@ -24,23 +24,18 @@ env:
   APPLY_FIXES: all
 
   ENABLE_LINTERS:
-    # Typescript Linters
     - TYPESCRIPT_ES
     - TYPESCRIPT_STANDARD
     - TYPESCRIPT_PRETTIER
-    # CSS Linters
     - CSS_STYLELINT
     - CSS_SCSS_LINT
-    # HTML Linters
     - HTML_DJLINT
     - HTML_HTMLHINT
-    # JSON Linters
     - JSON_JSONLINT
     - JSON_ESLINT_PLUGIN_JSONC
     - JSON_V8R
     - JSON_PRETTIER
     - JSON_NPM_PACKAGE_JSON_LINT
-    # YAML Linters
     - YAML_PRETTIER
     - YAML_YAMLLINT
     - YAML_V8R
