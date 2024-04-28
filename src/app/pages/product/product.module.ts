@@ -20,4 +20,4 @@ import { ModalsModule, WidgetsModule } from '../../_metronic/partials';
     ReactiveFormsModule,
   ],
 })
-export class ProductModule {}
+export class ProductModule { }

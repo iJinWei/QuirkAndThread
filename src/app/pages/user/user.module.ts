@@ -11,8 +11,6 @@ import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 import { UserViewModalComponent } from './user-listing/user-listing-modal/user-listing-modal-view.component';
 import { UserEditModalComponent } from './user-listing/user-listing-modal/user-listing-modal-edit.component';
 
-
-
 @NgModule({
   declarations: [UserListingComponent, UserDetailsComponent, UserViewModalComponent, UserEditModalComponent],
   imports: [
