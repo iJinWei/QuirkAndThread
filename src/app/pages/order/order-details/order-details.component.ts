@@ -6,7 +6,6 @@ import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IOrder } from 'src/app/modules/models/order.model';
 import { CommonModule } from '@angular/common';
-import { IOrderItem } from 'src/app/modules/models/order-item.model';
 import { AuthService } from 'src/app/modules/auth';
 import { User, IUser } from 'src/app/modules/models/user.model';
 import { FormValidationService } from '../../form-validation.service';
@@ -37,7 +36,7 @@ export class OrderDetailsComponent implements OnInit {
   ) {}
 
   order$: Observable<IOrder>;
-  orderItems$: Observable<Array<IOrderItem>>;
+
   editOrderForm: FormGroup;
   orderId: string;
   editMode: boolean;
@@ -101,9 +100,6 @@ export class OrderDetailsComponent implements OnInit {
       // Getting order details
       this.order$ = this.service.getOrderById(this.orderId)
 
-      // Getting all the order items for this order
-      this.orderItems$ = this.service.getOrderItemsByOrderId(this.orderId)
-      
       // Getting this user id
       this.authService.getUser().subscribe((user) => {
         this.userId = user.uid
@@ -164,6 +160,11 @@ export class OrderDetailsComponent implements OnInit {
         deliveryPersonnel: order.deliveryPersonnelId || '',
         deliveryStatus: order.deliveryStatus || ''
       })
+
+      if (this.isLogistic && !this.isAdmin) {
+        this.editOrderForm.get('orderStatus')?.disable();
+        this.editOrderForm.get('deliveryPersonnel')?.disable();
+      }
     }
   }
 
@@ -184,7 +185,7 @@ export class OrderDetailsComponent implements OnInit {
               console.log('Order updated successfully');
               this.resetForm();
               this.toggleEditMode(order);
-              this.back();
+              // this.back();
             }).catch(error => {
               console.error('Error updating order:', error);
               this.displayErrorAlert('Error in updating order. Please try again later.');

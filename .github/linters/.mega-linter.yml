@@ -1,0 +1,35 @@
+# Apply linter fixes configuration
+#
+# When active, APPLY_FIXES must also be defined as environment variable
+# (in github/workflows/mega-linter.yml or other CI tool)
+APPLY_FIXES: all
+
+ENABLE_LINTERS:
+# Typescript Linters
+- TYPESCRIPT_ES
+- TYPESCRIPT_STANDARD
+- TYPESCRIPT_PRETTIER
+# CSS Linters
+- CSS_STYLELINT
+- CSS_SCSS_LINT
+# HTML Linters
+- HTML_DJLINT
+- HTML_HTMLHINT
+# JSON Linters
+- JSON_JSONLINT
+- JSON_ESLINT_PLUGIN_JSONC
+- JSON_V8R
+- JSON_PRETTIER
+- JSON_NPM_PACKAGE_JSON_LINT
+# YAML Linters
+- YAML_PRETTIER
+- YAML_YAMLLINT
+- YAML_V8R
+
+# Decide which event triggers application of fixes in a commit or a PR
+# (pull_request, push, all)
+APPLY_FIXES_EVENT: pull_request
+
+# If APPLY_FIXES is used, defines if the fixes are directly committed (commit)
+# or posted in a PR (pull_request)
+APPLY_FIXES_MODE: commit
