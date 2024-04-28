@@ -7,7 +7,7 @@
                 <h4 class="card-title">Order Details</h4>
                 <ul class="list-group">
                     <li class="list-group-item"><strong>Order ID:</strong> {{ order.id }}</li>
-                    <li class="list-group-item"><strong>Customer Name:</strong> {{order.name}}</li>
+                    <li class="list-group-item"><strong>Customer ID:</strong> {{order.userId}}</li>
                     <li class="list-group-item"><strong>Date Ordered:</strong> {{ parseDate(order.date)}}</li>
                     <li class="list-group-item"><strong>Order Status:</strong> {{order.orderStatus}}</li>
                     <li class="list-group-item"><strong>Delivery Personnel:</strong> 
@@ -16,6 +16,7 @@
                     </li>
                     <li class="list-group-item"><strong>Delivery Status:</strong> {{order.deliveryStatus}}</li>
                     <li class="list-group-item"><strong>Total Amount:</strong> ${{order.totalAmount}}</li>
+                    <li class="list-group-item"><strong>Shipping Address:</strong> {{order.address}}</li>
                 </ul>
                 <br>
                 <div style="margin-top: 1%;">
@@ -39,12 +40,21 @@
                         <strong>Order ID:</strong> {{ order.id }}
                     </li>
                     <li class="list-group-item">
-                        <strong>Customer Name:</strong> {{order.name}}
+                        <strong>Customer ID:</strong> {{order.userId}}
                     </li>
                     <li class="list-group-item">
                         <strong>Date Ordered:</strong> {{ parseDate(order.date)}}
                     </li>
-                    <li class="list-group-item">
+                    <li class="list-group-item" *ngIf="isLogistic && !isAdmin">
+                        <strong>Order Status:</strong> {{ order.orderStatus}}
+                        <input formControlName="orderStatus" type="text" [hidden]="true"  value="order.status" />
+                    </li>
+                    <li class="list-group-item"  *ngIf="isLogistic && !isAdmin">
+                        <strong>Delivery Personnel:</strong> 
+                        <span *ngIf="deliveryPersonForThisOrder$ | async as deliveryPersonForThisOrder;"> {{ deliveryPersonForThisOrder.name }} </span>
+                        <input formControlName="deliveryPersonnel" type="text" [hidden]="true" value="deliveryPersonForThisOrder.id" />
+                    </li>
+                    <li class="list-group-item" *ngIf="isAdmin">
                         <label for="orderStatus"><strong>Order Status: </strong></label>
                         &nbsp;
                         <select id="orderStatus" formControlName="orderStatus">
@@ -55,7 +65,7 @@
                             <div *ngIf="editOrderForm.get('orderStatus')?.errors?.required">Please select a status.</div>
                         </div>
                     </li>
-                    <li class="list-group-item">
+                    <li class="list-group-item" *ngIf="isAdmin">
                         <label for="deliveryStatus"><strong>Delivery Personnel: </strong></label>
                         &nbsp;
                         <select id="deliveryPersonnel" formControlName="deliveryPersonnel">
@@ -80,6 +90,9 @@
                     <li class="list-group-item">
                         <strong>Total Amount:</strong> ${{order.totalAmount}}
                     </li>
+                    <li class="list-group-item">
+                        <strong>Shipping Address:</strong> {{order.address}}
+                    </li>
                 </ul>
                 <div style="margin-top: 1%;">
                     <button type="submit" class="btn btn-primary" [disabled]="!editOrderForm.valid">Save</button>
@@ -96,28 +109,36 @@
     <div class="card">
         <div class="card-body">
             <h4 class="card-title">Products</h4>
-            <table class="table-light" style="width: 100%; padding:2%;">
-                <thead class="table-primary">
-                    <tr>
-                    <th scope="col">Product ID</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Price</th>
-                    <th scope="col">Quantity</th>
-                    </tr>
-                </thead>
-                <tbody class="table-group-divider">
-                    <tr *ngFor="let orderItem of orderItems$ | async"  style="border-bottom: 1px solid #ccc;">
-                        <td>{{orderItem.productId}}</td>
-                        <td>{{orderItem.productName}}</td>
-                        <td>{{orderItem.price}}</td>
-                        <td>{{orderItem.quantity}}</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-        </div>
+            <div *ngIf="order$ | async as order">
+                <div *ngIf="order.items && order.items.length > 0;">
+                    <table class="table-light" style="width: 100%; padding:2%;">
+                        <thead class="table-primary">
+                            <tr>
+                            <th scope="col">Product ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Image</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                            <tr *ngFor="let orderItem of order.items"  style="border-bottom: 1px solid #ccc;">
+                                <td>{{orderItem.product?.id}}</td>
+                                <td>{{orderItem.product?.name}}</td>
+                                <td>{{orderItem.product?.category}}</td>
+                                <td>
+                                    <img [src]="orderItem.product?.imageUrl" alt="Image Description" width="100" height="100">
+                                </td>
+                                <td>${{orderItem.product?.price}}</td>
+                                <td>{{orderItem.quantity}}</td>
+                            </tr>
 
-    
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>    
 </ng-container>    
 

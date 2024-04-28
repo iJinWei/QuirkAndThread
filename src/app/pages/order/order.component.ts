@@ -106,36 +106,36 @@ export class OrderComponent implements OnInit {
   }
   
   // for testing only.
-  createOrder() {
-    let order = {
-      "name": "Tester",
-      "date": new Date(),
-      "orderStatus": "Processing",
-      "deliveryStatus": "Shipped",
-      "totalAmount": "100",
-      "userId": "d6jCHdfYFzz8ltiI0VbP",
-      "deliveryPersonnelId": "DIp2hTTwFkToW8S7F3UX1rtrht73"
-    }
-    this.service.addOrder(order).then((res) => {
-      const newOrderId = res.id
-      let orderItem1 = {
-        "productId": "vzI2ZrBAKjw8cZLPIaiH",
-        "orderId": newOrderId,
-        "price": "25",
-        "quantity": "2",
-        "productName": "Performance Running T-Shirt"
-      }
-      let orderItem2 = {
-        "productId": "7d9AKgu0dFZ4fzcU2jWw",
-        "orderId": newOrderId,
-        "price": "50",
-        "quantity": "1",
-        "productName": "Fitness Training Tracksuit"
-      }
-      this.service.addOrderItem(orderItem1)
-      this.service.addOrderItem(orderItem2)
-    });
+  // createOrder() {
+  //   let order = {
+  //     "name": "Tester",
+  //     "date": new Date(),
+  //     "orderStatus": "Processing",
+  //     "deliveryStatus": "Shipped",
+  //     "totalAmount": "100",
+  //     "userId": "d6jCHdfYFzz8ltiI0VbP",
+  //     "deliveryPersonnelId": "DIp2hTTwFkToW8S7F3UX1rtrht73"
+  //   }
+  //   this.service.addOrder(order).then((res) => {
+  //     const newOrderId = res.id
+  //     let orderItem1 = {
+  //       "productId": "vzI2ZrBAKjw8cZLPIaiH",
+  //       "orderId": newOrderId,
+  //       "price": "25",
+  //       "quantity": "2",
+  //       "productName": "Performance Running T-Shirt"
+  //     }
+  //     let orderItem2 = {
+  //       "productId": "7d9AKgu0dFZ4fzcU2jWw",
+  //       "orderId": newOrderId,
+  //       "price": "50",
+  //       "quantity": "1",
+  //       "productName": "Fitness Training Tracksuit"
+  //     }
+  //     this.service.addOrderItem(orderItem1)
+  //     this.service.addOrderItem(orderItem2)
+  //   });
 
-  }
+  // }
 
 }
