@@ -1,51 +1,30 @@
 <!-- Dashboard -->
 <div class="menu-item me-lg-1">
-  <a
-    class="menu-link py-3"
-    routerLinkActive="active menu-here"
-    routerLink="/dashboard"
-  >
+  <a class="menu-link py-3" routerLinkActive="active menu-here" routerLink="/dashboard">
     <span class="menu-title" translate="MENU.DASHBOARD"></span>
   </a>
 </div>
 
 <!-- User Management -->
-<div
-  *ngIf="isAdmin"
-  class="menu-item menu-lg-down-accordion me-lg-1 menu-dropdown"
-  data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
-  data-kt-menu-placement="bottom-start"
->
+<div *ngIf="isAdmin" class="menu-item menu-lg-down-accordion me-lg-1 menu-dropdown"
+  data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="bottom-start">
   <span class="menu-link py-3">
     <span class="menu-title">User Management</span>
     <span class="menu-arrow d-lg-none"></span>
   </span>
-  <div
-    class="menu-sub menu-sub-lg-down-accordion menu-sub-lg-dropdown menu-rounded-0 py-lg-4 w-lg-225px"
-    data-kt-menu-dismiss="true"
-    data-popper-placement="bottom-start"
-  >
+  <div class="menu-sub menu-sub-lg-down-accordion menu-sub-lg-dropdown menu-rounded-0 py-lg-4 w-lg-225px"
+    data-kt-menu-dismiss="true" data-popper-placement="bottom-start">
     <div class="menu-item menu-lg-down-accordion me-lg-1">
       <span class="menu-link py-3">
         <span class="menu-icon"><i class="bi fs-3 bi-people"></i></span>
-        <span
-          class="menu-title"
-          routerLinkActive="active"
-          routerLink="/apps/users"
-          >Users</span
-        >
+        <span class="menu-title" routerLinkActive="active" routerLink="/apps/users">Users</span>
       </span>
     </div>
 
     <div class="menu-item menu-lg-down-accordion me-lg-1">
       <span class="menu-link py-3">
         <span class="menu-icon"><i class="bi fs-3 bi-person-gear"></i></span>
-        <span
-          class="menu-title"
-          routerLinkActive="active"
-          routerLink="/apps/roles"
-          >Roles</span
-        >
+        <span class="menu-title" routerLinkActive="active" routerLink="/apps/roles">Roles</span>
       </span>
     </div>
   </div>
@@ -53,22 +32,14 @@
 
 <!-- Product Management -->
 <div *ngIf="isAdmin" class="menu-item me-lg-1">
-  <a
-    class="menu-link py-3"
-    routerLinkActive="active menu-here"
-    routerLink="/product"
-  >
+  <a class="menu-link py-3" routerLinkActive="active menu-here" routerLink="/product">
     <span class="menu-title">Product Management </span>
   </a>
 </div>
 
 <!-- Order Management -->
 <div *ngIf="isAdmin || isLogistic" class="menu-item me-lg-1">
-  <a
-    class="menu-link py-3"
-    routerLinkActive="active menu-here"
-    routerLink="/order"
-  >
+  <a class="menu-link py-3" routerLinkActive="active menu-here" routerLink="/order">
     <span class="menu-title">Order Management </span>
   </a>
 </div>

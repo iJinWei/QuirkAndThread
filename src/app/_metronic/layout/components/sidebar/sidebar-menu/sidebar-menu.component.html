@@ -1,29 +1,12 @@
 <!--begin::Menu wrapper-->
-<div
-  id="kt_app_sidebar_menu_scroll"
-  class="scroll-y my-5 mx-3"
-  data-kt-scroll="true"
-  data-kt-scroll-activate="true"
-  data-kt-scroll-height="auto"
-  data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer"
-  data-kt-scroll-wrappers="#kt_app_sidebar_menu"
-  data-kt-scroll-offset="5px"
-  data-kt-scroll-save-state="true"
->
+<div id="kt_app_sidebar_menu_scroll" class="scroll-y my-5 mx-3" data-kt-scroll="true" data-kt-scroll-activate="true"
+  data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer"
+  data-kt-scroll-wrappers="#kt_app_sidebar_menu" data-kt-scroll-offset="5px" data-kt-scroll-save-state="true">
   <!--begin::Menu-->
-  <div
-    class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6"
-    id="#kt_app_sidebar_menu"
-    data-kt-menu="true"
-    data-kt-menu-expand="false"
-  >
+  <div class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6" id="#kt_app_sidebar_menu"
+    data-kt-menu="true" data-kt-menu-expand="false">
     <!-- User Management -->
-    <div
-      *ngIf="isAdmin"
-      class="menu-item menu-accordion"
-      data-kt-menu-trigger="click"
-      routerLinkActive="here show"
-    >
+    <div *ngIf="isAdmin" class="menu-item menu-accordion" data-kt-menu-trigger="click" routerLinkActive="here show">
       <span class="menu-link">
         <span class="menu-icon">
           <app-keenicon name="profile-user" class="fs-2"></app-keenicon>
@@ -31,16 +14,9 @@
         <span class="menu-title" data-link="/apps">User Management </span>
         <span class="menu-arrow"></span>
       </span>
-      <div
-        class="menu-sub menu-sub-accordion"
-        routerLinkActive="menu-active-bg"
-      >
+      <div class="menu-sub menu-sub-accordion" routerLinkActive="menu-active-bg">
         <div class="menu-item">
-          <a
-            class="menu-link without-sub"
-            routerLinkActive="active"
-            routerLink="/apps/users"
-          >
+          <a class="menu-link without-sub" routerLinkActive="active" routerLink="/apps/users">
             <span class="menu-bullet">
               <span class="bullet bullet-dot"></span>
             </span>
@@ -48,11 +24,7 @@
           </a>
         </div>
         <div class="menu-item">
-          <a
-            class="menu-link without-sub"
-            routerLinkActive="active"
-            routerLink="/apps/roles"
-          >
+          <a class="menu-link without-sub" routerLinkActive="active" routerLink="/apps/roles">
             <span class="menu-bullet">
               <span class="bullet bullet-dot"></span>
             </span>
@@ -64,11 +36,7 @@
 
     <!-- Products Management -->
     <div *ngIf="isAdmin" class="menu-item">
-      <a
-        class="menu-link without-sub"
-        routerLink="/product"
-        routerLinkActive="active"
-      >
+      <a class="menu-link without-sub" routerLink="/product" routerLinkActive="active">
         <span class="menu-icon">
           <app-keenicon name="shop" class="fs-2"></app-keenicon>
         </span>
@@ -78,11 +46,7 @@
 
     <!-- Orders Management -->
     <div *ngIf="isAdmin || isLogistic" class="menu-item">
-      <a
-        class="menu-link without-sub"
-        routerLink="/order"
-        routerLinkActive="active"
-      >
+      <a class="menu-link without-sub" routerLink="/order" routerLinkActive="active">
         <span class="menu-icon">
           <app-keenicon name="parcel" class="fs-2"></app-keenicon>
         </span>

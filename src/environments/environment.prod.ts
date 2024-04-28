@@ -168,8 +168,17 @@ export const environment = {
 
   captcha: {
     siteKey: "6LflWcEpAAAAAKPLs5XTe4575faLtmujHjH6kJn-",
-    secretKey: "6LflWcEpAAAAAA_QXcEzq2ioQCZHhpnYRszFKA4h",
     cloudFunctionUrl: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/verifyRecaptchaOnProd"
+  },
+
+  formValidation: {
+    product: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateProductForm",
+    editOrder: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateEditOrderForm",
+    registration: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateRegistrationForm",
+    login:"https://us-central1-quirkandthread-a151e.cloudfunctions.net/validateLoginForm"
+  },
+  auth: {
+    checkUserRole:"https://us-central1-quirkandthread-a151e.cloudfunctions.net/checkUserRole"
   }
 };
 

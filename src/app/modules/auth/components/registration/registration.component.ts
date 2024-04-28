@@ -9,7 +9,8 @@ import { concatMap, first, switchMap } from 'rxjs/operators';
 import { SharedService } from 'src/app/shared.service';
 import { ReCaptcha2Component } from 'ngx-captcha';
 import { environment } from 'src/environments/environment';
-import { RecaptchaService } from '../../services/recaptcha.service';
+import { AuthCloudService } from '../../services/auth-cloud.service';
+import { FormValidationService } from 'src/app/pages/form-validation.service';
 
 @Component({
   selector: 'app-registration',
@@ -40,7 +41,8 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private service:SharedService,
-    private recaptchaService: RecaptchaService,
+    private authCloudService: AuthCloudService,
+    private validationService: FormValidationService
   ) {
     this.siteKey = environment.captcha.siteKey;
     this.isLoading$ = this.authService.isLoading$;
@@ -163,65 +165,78 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   // }
 
   submit() {
-    this.verifyCaptchaToken().then(valid => {
-      if (valid) {
-        this.hasError = false;
-        const result: { [key: string]: string } = {};
-        Object.keys(this.f).forEach((key) => {
-          result[key] = this.f[key].value;
-        });
-        const newUser = new UserModel();
-        newUser.setUser(result);
-      
-        const registrationSubscr = this.authService
-          .registrationFirebase(newUser)
-          .subscribe({
-            next: (firebaseUser) => { // Assuming firebaseUser now includes the full user object
-              if (firebaseUser) {
-                // Registration successful, now add user details to Firestore
-                const userData = {
-                  email: newUser.email, // Assuming UserModel has an email field
-                  name: newUser.fullname, // Assuming UserModel has a name field
-                  joinDate: new Date(), // Use current date for joinDate
-                  lastLogin: new Date(), // Consider updating this field upon each login
-                  roles: ["logistic"], // Default role
-                };
-                // Add user data to Firestore (assumes SharedService or similar is injected as sharedService)
-                this.service.addUser(firebaseUser.uid, userData).then(() => {
-                  console.log("adding user")
-                  this.authService.sendEmailVerification(firebaseUser)
-                }).catch((firestoreError: any) => {
-                  console.error(firestoreError);
-                  this.hasError = true;
-                  // Handle Firestore error (e.g., display an error message)
-                  alert('Registration was successful, but there was an error storing additional user details.');
+    if (this.registrationForm.valid) {
+      const formData = this.registrationForm.value;
+      this.validationService.validateRegistrationForm(formData).subscribe(
+        (response) => {
+          this.verifyCaptchaToken().then(valid => {
+            if (valid) {
+              this.hasError = false;
+              const result: { [key: string]: string } = {};
+              Object.keys(this.f).forEach((key) => {
+                result[key] = this.f[key].value;
+              });
+              const newUser = new UserModel();
+              newUser.setUser(result);
+            
+              const registrationSubscr = this.authService
+                .registrationFirebase(newUser)
+                .subscribe({
+                  next: (firebaseUser) => { // Assuming firebaseUser now includes the full user object
+                    if (firebaseUser) {
+                      // Registration successful, now add user details to Firestore
+                      const userData = {
+                        email: newUser.email, // Assuming UserModel has an email field
+                        name: newUser.fullname, // Assuming UserModel has a name field
+                        joinDate: new Date(), // Use current date for joinDate
+                        lastLogin: new Date(), // Consider updating this field upon each login
+                        roles: ["logistic"], // Default role
+                      };
+                      // Add user data to Firestore (assumes SharedService or similar is injected as sharedService)
+                      this.service.addUser(firebaseUser.uid, userData).then(() => {
+                        console.log("adding user")
+                        this.authService.sendEmailVerification(firebaseUser)
+                      }).catch((firestoreError: any) => {
+                        console.error(firestoreError);
+                        this.hasError = true;
+                        // Handle Firestore error (e.g., display an error message)
+                        alert('Registration was successful, but there was an error storing additional user details.');
+                      });
+                    } else {
+                      // Handle the unlikely case that registration succeeded without a user object
+                      this.hasError = true;
+                      alert('Registration failed. Please try again.');
+                    }
+                  },
+                  error: (err) => {
+                    this.hasError = true;
+                    console.error(err);
+                    alert(`Registration failed: ${err.message}`);
+                  }
                 });
-              } else {
-                // Handle the unlikely case that registration succeeded without a user object
-                this.hasError = true;
-                alert('Registration failed. Please try again.');
-              }
-            },
-            error: (err) => {
+            
+              this.unsubscribe.push(registrationSubscr);
+            } else {
+              // reCAPTCHA validation failed
               this.hasError = true;
-              console.error(err);
-              alert(`Registration failed: ${err.message}`);
+              alert('reCAPTCHA validation failed. Please try again.');
             }
+          }).catch(error => {
+            // Handle reCAPTCHA service error
+            this.hasError = true;
+            console.error(error);
+            alert(`reCAPTCHA verification failed: ${error.message}`);
           });
-      
-        this.unsubscribe.push(registrationSubscr);
-      } else {
-        // reCAPTCHA validation failed
-        this.hasError = true;
-        alert('reCAPTCHA validation failed. Please try again.');
-      }
-    }).catch(error => {
-      // Handle reCAPTCHA service error
-      this.hasError = true;
-      console.error(error);
-      alert(`reCAPTCHA verification failed: ${error.message}`);
-    });
-    
+        },
+        (error) => {
+          console.error('Invalid Form', error);
+          alert('Error registering user. Please try again.');
+        }
+      )
+    } else {
+      console.error('Invalid Form');
+      alert('Error registering user. Please try again.');
+    }
   }
 
   handleRecaptchaSuccess(token: any): void {
@@ -235,7 +250,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   
   async verifyCaptchaToken(): Promise<boolean> {
     try {
-      const valid = await this.recaptchaService.verifyRecaptcha(this.recaptchaToken).toPromise();
+      const valid = await this.authCloudService.verifyRecaptcha(this.recaptchaToken).toPromise();
       return !!valid;
     } catch (error) {
       console.error("reCAPTCHA verification error:", error);

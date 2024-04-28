@@ -63,6 +63,8 @@ export class AuthService implements OnDestroy {
     this.currentUserSubject = new BehaviorSubject<UserType>(undefined);
     this.currentUser$ = this.currentUserSubject.asObservable();
     this.isLoading$ = this.isLoadingSubject.asObservable();
+    const subscr = this.getUserByToken().subscribe();
+    this.unsubscribe.push(subscr);
     this.afAuth.authState.subscribe((user) => {
       if (user) {
         // User is signed in.
@@ -110,6 +112,27 @@ export class AuthService implements OnDestroy {
     this.unsubscribe.forEach((sb) => sb.unsubscribe());
   }
 
+  getUserByToken(): Observable<UserType> {
+    const auth = this.getAuthFromLocalStorage();
+    if (!auth || !auth.authToken) {
+      return of(undefined);
+    }
+
+    this.isLoadingSubject.next(true);
+    return this.authHttpService.getUserByToken(auth.authToken).pipe(
+      map((user: UserType) => {
+        if (user) {
+          this.currentUserSubject.next(user);
+        } else {
+          console.log("LOGOUT");
+          // this.logout();
+        }
+        return user;
+      }),
+      finalize(() => this.isLoadingSubject.next(false))
+    );
+  }
+
   // Firebase functions
 
   // Registration of User
@@ -139,11 +162,27 @@ export class AuthService implements OnDestroy {
       }
     );
   }
+  
+  login(email: string, password: string): Observable<UserType> {
+    this.isLoadingSubject.next(true);
+    return this.authHttpService.login(email, password).pipe(
+      map((auth: AuthModel) => {
+        const result = this.setAuthFromLocalStorage(auth);
+        return result;
+      }),
+      switchMap(() => this.getUserByToken()),
+      catchError((err) => {
+        console.error('err', err);
+        return of(undefined);
+      }),
+      finalize(() => this.isLoadingSubject.next(false))
+    );
+  }
 
   loginFirebase(
     email: string,
     password: string
-  ): Observable<UserModel | undefined> {
+  ): Observable<UserType> {
     this.isLoadingSubject.next(true);
     return from(this.afAuth.signInWithEmailAndPassword(email, password)).pipe(
       map((userCredential) => {
@@ -213,6 +252,13 @@ export class AuthService implements OnDestroy {
     );
   }
 
+  logout() {
+    localStorage.removeItem(this.authLocalStorageToken);
+    this.router.navigate(['/auth/login'], {
+      queryParams: {},
+    });
+  }
+
   logoutFirebase() {
     // Sign out from Firebase
     this.afAuth
@@ -261,6 +307,9 @@ export class AuthService implements OnDestroy {
 
   // Method to check if a user has a specific role
   async userHasRole(userId: string, roleToCheck: string): Promise<boolean> {
+
+    console.log(userId, roleToCheck);
+    
     try {
       // Reference to the 'users' collection
       const usersCollectionRef = collection(this.fs, 'users');

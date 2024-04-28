@@ -1,12 +1,13 @@
 import { Routes } from '@angular/router';
+import { authGuardAdmin, authGuardAdminLogistic } from '../modules/auth/services/authGuardFn';
 
 const Routing: Routes = [
   {
-    path: 'product',
+    path: 'product', canActivate: [authGuardAdmin],
     loadChildren: () => import('./product/product.module').then((m) => m.ProductModule),
   },
   {
-    path: 'order',
+    path: 'order', canActivate: [authGuardAdminLogistic],
     loadChildren: () => import('./order/order.module').then((m) => m.OrderModule),
   },
   {
@@ -43,11 +44,11 @@ const Routing: Routes = [
     // data: { layout: 'light-sidebar' },
   },
   {
-    path: 'apps/users',
+    path: 'apps/users', canActivate: [authGuardAdmin],
     loadChildren: () => import('./user/user.module').then((m) => m.UserModule),
   },
   {
-    path: 'apps/roles',
+    path: 'apps/roles', canActivate: [authGuardAdmin],
     loadChildren: () => import('./role/role.module').then((m) => m.RoleModule),
   },
   {

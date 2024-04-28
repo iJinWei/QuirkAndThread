@@ -40,6 +40,7 @@
     "clipboard": "2.0.11",
     "datatables.net": "^2.0.3",
     "datatables.net-bs5": "^2.0.3",
+    "date-fns": "^3.6.0",
     "firebase": "^10.10.0",
     "firebase-functions": "^4.8.2",
     "jquery": "^3.7.1",
@@ -55,7 +56,7 @@
     "prismjs": "^1.29.0",
     "rxjs": "~7.8.1",
     "socicon": "3.0.5",
-    "sweetalert2": "11.10.7",
+    "sweetalert2": "^11.10.7",
     "tslib": "^2.6.2",
     "zone.js": "~0.14.4"
   },

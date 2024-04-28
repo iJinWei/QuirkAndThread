@@ -1,6 +1,7 @@
 <div class="d-flex flex-column flex-lg-row">
   <!--begin::Content-->
   <div class="flex-lg-row-fluid ms-lg-10">
+    <a [routerLink]="['/apps/roles']" type="button" class="btn btn-primary btn-sm" style="cursor: pointer; margin: 1%; ">Back to role list</a>
     <!--begin::Card-->
     <div class="card card-flush mb-6 mb-xl-9">
       <!--begin::Card header-->
@@ -28,6 +29,7 @@
         <app-crud
           [datatableConfig]="datatableConfig"
           [reload]="reloadEvent"
+          [showActions]="false"
         ></app-crud>
         <!--end::Table-->
       </div>
