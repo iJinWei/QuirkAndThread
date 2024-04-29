@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
@@ -23,7 +23,7 @@ export class ForgotPasswordComponent implements OnInit {
 
   // private fields
   private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+  constructor(private fb: FormBuilder, private authService: AuthService, private cdr: ChangeDetectorRef) {
     this.isLoading$ = this.authService.isLoading$;
   }
 
@@ -39,7 +39,7 @@ export class ForgotPasswordComponent implements OnInit {
   initForm() {
     this.forgotPasswordForm = this.fb.group({
       email: [
-        'admin@demo.com',
+        '',
         Validators.compose([
           Validators.required,
           Validators.email,
@@ -50,14 +50,26 @@ export class ForgotPasswordComponent implements OnInit {
     });
   }
 
-  submit() {
+  // submit() {
+  //   this.errorState = ErrorStates.NotSubmitted;
+  //   const forgotPasswordSubscr = this.authService
+  //     .forgotPassword(this.f.email.value)
+  //     .pipe(first())
+  //     .subscribe((result: boolean) => {
+  //       this.errorState = result ? ErrorStates.NoError : ErrorStates.HasError;
+  //     });
+  //   this.unsubscribe.push(forgotPasswordSubscr);
+  // }
+
+  async submit() {
     this.errorState = ErrorStates.NotSubmitted;
-    const forgotPasswordSubscr = this.authService
-      .forgotPassword(this.f.email.value)
-      .pipe(first())
-      .subscribe((result: boolean) => {
-        this.errorState = result ? ErrorStates.NoError : ErrorStates.HasError;
-      });
-    this.unsubscribe.push(forgotPasswordSubscr);
+    try {
+      const result = await this.authService.forgotPassword(this.f.email.value);
+      this.errorState = result ? ErrorStates.NoError : ErrorStates.HasError;
+    } catch (error) {
+      console.error('Error during the password reset process:', error);
+      this.errorState = ErrorStates.HasError;
+    }
+    this.cdr.detectChanges();
   }
 }

@@ -76,13 +76,23 @@ export class AuthService implements OnDestroy {
     });
   }
 
-  forgotPassword(email: string): Observable<boolean> {
-    this.isLoadingSubject.next(true);
-    return this.authHttpService
-      .forgotPassword(email)
-      .pipe(finalize(() => this.isLoadingSubject.next(false)));
-  }
+  // forgotPassword(email: string): Observable<boolean> {
+  //   this.isLoadingSubject.next(true);
+  //   return this.authHttpService
+  //     .forgotPassword(email)
+  //     .pipe(finalize(() => this.isLoadingSubject.next(false)));
+  // }
 
+  async forgotPassword(email: string): Promise<boolean> {
+    try {
+      await this.afAuth.sendPasswordResetEmail(email);
+      return true;  // Indicates success
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+      return false; // Indicates failure
+    }
+  }
+  
   // private methods
   private setAuthFromLocalStorage(auth: AuthModel): boolean {
     // store auth authToken/refreshToken/epiresIn in local storage to keep user logged in between page refreshes
