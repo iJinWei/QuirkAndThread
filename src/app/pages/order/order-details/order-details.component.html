@@ -47,12 +47,12 @@
                     </li>
                     <li class="list-group-item" *ngIf="isLogistic && !isAdmin">
                         <strong>Order Status:</strong> {{ order.orderStatus}}
-                        <input formControlName="orderStatus" type="text" [hidden]="true"  value="order.status" />
+                        <input formControlName="orderStatus" type="text" [hidden]="true"  value="order.orderStatus" readonly/>
                     </li>
                     <li class="list-group-item"  *ngIf="isLogistic && !isAdmin">
                         <strong>Delivery Personnel:</strong> 
                         <span *ngIf="deliveryPersonForThisOrder$ | async as deliveryPersonForThisOrder;"> {{ deliveryPersonForThisOrder.name }} </span>
-                        <input formControlName="deliveryPersonnel" type="text" [hidden]="true" value="deliveryPersonForThisOrder.id" />
+                        <input formControlName="deliveryPersonnel" type="text" [hidden]="true"  value="order.deliveryPersonnelId" readonly/>
                     </li>
                     <li class="list-group-item" *ngIf="isAdmin">
                         <label for="orderStatus"><strong>Order Status: </strong></label>
