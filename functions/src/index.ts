@@ -214,13 +214,23 @@ export const validateEditOrderForm = functions.https.onCall(async (data, context
 });
 
 
-exports.validateLoginForm = functions.https.onCall((data, context) => {
+exports.validateLoginForm = functions.https.onCall(async (data, context) => {
   const {email, password, recaptcha} = data;
 
   // Perform server-side validation
   if (!email || typeof email !== "string" || email.length < 3 || email.length > 320 ||
     !isValidEmail(email)) {
     throw new functions.https.HttpsError("invalid-argument", "Invalid email");
+  }
+
+  try {
+    const snapshot = await admin.firestore().collection("users").where("email", "==", email).get();
+    if (snapshot.empty) {
+      throw new functions.https.HttpsError("not-found", "Email does not exist.");
+    }
+  } catch (error) {
+    console.error("Error checking email:", error);
+    throw new functions.https.HttpsError("internal", "Error checking email");
   }
 
   if (!password || typeof password !== "string" || password.length < 3 || password.length > 100) {
@@ -246,6 +256,16 @@ exports.validateRegistrationForm = functions.https.onCall(async (data, context) 
   if (!email || typeof email !== "string" || email.length < 3 || email.length > 320 ||
     !isValidEmail(email)) {
     throw new functions.https.HttpsError("invalid-argument", "Invalid email");
+  }
+
+  try {
+    const snapshot = await admin.firestore().collection("users").where("email", "==", email).get();
+    if (!snapshot.empty) {
+      throw new functions.https.HttpsError("invalid-argument", "Email already exist.");
+    }
+  } catch (error) {
+    console.error("Error checking email:", error);
+    throw new functions.https.HttpsError("internal", "Error checking email");
   }
 
   if (!password || typeof password !== "string" || password.length < 8 ||
@@ -279,6 +299,8 @@ function isValidEmail(email: string) : boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
+
+
 /**
  * Validate password
  * @param {string} password
