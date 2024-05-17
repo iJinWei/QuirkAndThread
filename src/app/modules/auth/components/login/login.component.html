@@ -1,4 +1,20 @@
 <!--begin::Form-->
+
+<!-- <script src="https://www.google.com/recaptcha/enterprise.js?render=6LfmtdApAAAAACOMeD7TISfbpAVLFpPBVvuEtfwp" async defer></script> -->
+<!-- Replace the variables below. -->
+<!-- <script type="text/javascript">
+  function onSubmitToken(token) {
+    console.log("token: ", token);
+    document.getElementById("demo-form").submit();
+  }
+</script> -->
+
+<!-- <button type = "button" class="button"(click)="initRecaptcha()">Submit</button> -->
+
+<!-- <button class="btn btn-primary" type="button" (click)="invokeFunction()">Invoke Function</button>
+<button class="btn btn-primary" type="button" (click)="invokeFunction1()">Invoke Function1</button>
+<button class="btn btn-primary" type="button" (click)="invokeFunction2()">Invoke Function2</button> -->
+
 <form
   class="form w-100"
   [formGroup]="loginForm"
@@ -192,7 +208,7 @@
   <!--begin::Wrapper-->
   <div class="d-flex flex-stack flex-wrap gap-3 fs-base fw-semibold mb-8">
     <div></div>
-
+    <!-- <button type="button" class="btn btn-primary"(click)="invokeFunction()">Test App Check</button> -->
     <!--begin::Link-->
     <a routerLink="/auth/forgot-password" class="link-primary">
       Forgot Password ?

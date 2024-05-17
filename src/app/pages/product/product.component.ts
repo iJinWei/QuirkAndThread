@@ -6,6 +6,9 @@ import { Observable } from 'rxjs';
 import { AuthService } from 'src/app/modules/auth';
 import { ImageUrlValidator, NumberValidator, PriceValidator } from '../validators';
 import { FormValidationService } from '../form-validation.service';
+import { CloudFunctionService } from 'src/app/cloud-function.service';
+import Swal from 'sweetalert2';
+
 
 @Component({
   selector: 'app-product',
@@ -25,7 +28,8 @@ export class ProductComponent implements OnInit {
     private fb: FormBuilder, 
     private authService:AuthService, 
     private cdr: ChangeDetectorRef,
-    private validationService: FormValidationService
+    private validationService: FormValidationService,
+    private cloudFunctionService: CloudFunctionService
   ) {}
 
   products$: Observable<any[]>;
@@ -44,14 +48,23 @@ export class ProductComponent implements OnInit {
     this.refreshProducts();
     this.loadCategories();
 
+    // this.productForm = this.fb.group({
+    //   category: ['', Validators.required],
+    //   categoryId: ['', Validators.required],
+    //   description: ['', [Validators.required, Validators.maxLength(100)]],
+    //   imageUrl: ['', [Validators.required, ImageUrlValidator()] ], // imageUrl: only accepts valid url with extensions 'jpg', 'jpeg', 'png', 'gif'
+    //   name: ['', [Validators.required, Validators.maxLength(30)]],
+    //   price: ['', [Validators.required, PriceValidator()]], // price: regex - ^\d+(\.\d{1,2})?$/ (number with up to 2 decimal points)
+    //   stockQuantity: ['', [Validators.required, NumberValidator()]] // stockQuantity: only accept positive number
+    // });
     this.productForm = this.fb.group({
       category: ['', Validators.required],
       categoryId: ['', Validators.required],
-      description: ['', [Validators.required, Validators.maxLength(100)]],
-      imageUrl: ['', [Validators.required, ImageUrlValidator()] ], // imageUrl: only accepts valid url with extensions 'jpg', 'jpeg', 'png', 'gif'
-      name: ['', [Validators.required, Validators.maxLength(30)]],
-      price: ['', [Validators.required, PriceValidator()]], // price: regex - ^\d+(\.\d{1,2})?$/ (number with up to 2 decimal points)
-      stockQuantity: ['', [Validators.required, NumberValidator()]] // stockQuantity: only accept positive number
+      description: ['', Validators.required],
+      imageUrl: ['', [] ], // imageUrl: only accepts valid url with extensions 'jpg', 'jpeg', 'png', 'gif'
+      name: ['', []],
+      price: [''], // price: regex - ^\d+(\.\d{1,2})?$/ (number with up to 2 decimal points)
+      stockQuantity: ['', []] // stockQuantity: only accept positive number
     });
   }
 
@@ -61,35 +74,44 @@ export class ProductComponent implements OnInit {
     });
   }
 
-  addProduct() {
-    const newProduct = this.productForm.value;
-    this.service.addProduct(newProduct).then((res)=>{
-      console.log('Product added successfully', res);
-      this.refreshProducts();
-      this.productForm.reset();
-    }).catch((error) => {
-      console.error('Error adding product:', error);
-    });
-  }
-
   deleteProduct(id:string) {
     this.errorMessage = null;
   
     this.authService.canPerformAction('admin').then(canPerform => {
       if (!canPerform) {
-        this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
+        // this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
+        Swal.fire({
+          title: 'Error',
+          text: 'Unauthorized: Insufficient permissions to perform this action.',
+          icon: 'error',
+        });
         return;
       } else {
-        this.service.deleteProduct(id).then((res)=>{
-          this.refreshProducts();
-        }).catch(error => {
-          console.error('Error deleting product:', error);
-          this.displayErrorAlert('Error in deleting product. Please try again.');
-        });
+        this.cloudFunctionService.callDeleteProductFunction({productData: id})
+            .then(result => {
+              this.refreshProducts()
+              Swal.fire({
+                title: 'Success!',
+                text: 'Product deleted successfully.',
+                icon: 'success',
+              });
+            })
+            .catch(error => {
+              console.error('Error deleting Product:', error);
+                Swal.fire({
+                  title: 'Error',
+                  text: 'Error deleting Product. Please try again.',
+                  icon: 'error',
+                });
+            });
       }
     }).catch(error => {
       console.error('Error checking permissions:', error);
-      this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Error checking permissions.',
+        icon: 'error',
+      });
     });
   }
 
@@ -128,48 +150,72 @@ export class ProductComponent implements OnInit {
   saveProduct() {
     // Clear any existing error messages at the start of the method
     this.errorMessage = null;
-  
+
     this.authService.canPerformAction('admin').then(canPerform => {
       if (!canPerform) {
-        this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
+        // this.displayErrorAlert('Unauthorized: Insufficient permissions to perform this action.');
+        Swal.fire({
+          title: 'Error',
+          text: 'Unauthorized: Insufficient permissions to perform this action.',
+          icon: 'error',
+        });
         return;
       } else {
         if (this.productForm.valid) {
-          const productData = this.productForm.value;
-          this.validationService.validateProductForm(productData).subscribe(
-            (response) => {
-              if (this.editingProductId) {
-                this.service.updateProduct(this.editingProductId, productData).then(() => {
-                  console.log('Product updated successfully');
-                  this.resetForm();
-                }).catch(error => {
-                  console.error('Error updating product:', error);
-                  this.displayErrorAlert('Error updating product. Please try again.');
+          const data = this.productForm.value;
+          if (this.editingProductId) {
+            const productId = this.editingProductId;
+            this.cloudFunctionService.callEditProductFunction({productId, data})
+            .then(result => {
+              Swal.fire({
+                title: 'Success!',
+                text: 'Product saved successfully.',
+                icon: 'success',
+              });
+            })
+            .catch(error => {
+              console.error('Error updating Product:', error);
+                Swal.fire({
+                  title: 'Error',
+                  text: 'Error saving Product. Please try again.',
+                  icon: 'error',
                 });
-              } else {
-                this.service.addProduct(productData).then(() => {
-                  console.log('Product added successfully');
-                  this.resetForm();
-                }).catch(error => {
-                  console.error('Error adding product:', error);
-                  this.displayErrorAlert('Error adding product. Please try again.');
+            });
+          } else {
+            this.cloudFunctionService.callCreateProductFunction({data})
+            .then(result => {
+              Swal.fire({
+                title: 'Success!',
+                text: 'Product created successfully.',
+                icon: 'success',
+              });
+            })
+            .catch(error => {
+              console.error('Error creating Product:', error);
+                Swal.fire({
+                  title: 'Error',
+                  text: 'Error creating Product. Please try again.',
+                  icon: 'error',
                 });
-              }
-            }, 
-            (error) => {
-              console.error('Invalid Form1', error);
-              this.displayErrorAlert('Error saving product. Please try again.');
-            }
-          )
+            });
+          }
         } else {
           console.error('Invalid Form', this.productForm.errors);
-          this.displayErrorAlert('Error saving product. Please try again.');
+          Swal.fire({
+            title: 'Error',
+            text: 'Invalid form. Please try again',
+            icon: 'error',
+          });
         }
       }
 
     }).catch(error => {
       console.error('Error checking permissions:', error);
-      this.displayErrorAlert('Error checking permissions. Please refresh the page or try again later.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Error checking permissions. Please try again',
+        icon: 'error',
+      });
     });
   }
   
