@@ -48,15 +48,6 @@ export class ProductComponent implements OnInit {
     this.refreshProducts();
     this.loadCategories();
 
-    // this.productForm = this.fb.group({
-    //   category: ['', Validators.required],
-    //   categoryId: ['', Validators.required],
-    //   description: ['', [Validators.required, Validators.maxLength(100)]],
-    //   imageUrl: ['', [Validators.required, ImageUrlValidator()] ], // imageUrl: only accepts valid url with extensions 'jpg', 'jpeg', 'png', 'gif'
-    //   name: ['', [Validators.required, Validators.maxLength(30)]],
-    //   price: ['', [Validators.required, PriceValidator()]], // price: regex - ^\d+(\.\d{1,2})?$/ (number with up to 2 decimal points)
-    //   stockQuantity: ['', [Validators.required, NumberValidator()]] // stockQuantity: only accept positive number
-    // });
     this.productForm = this.fb.group({
       category: ['', Validators.required],
       categoryId: ['', Validators.required],
