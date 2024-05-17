@@ -14,7 +14,7 @@ import { environment } from 'src/environments/environment';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 
 import { FakeAPIService } from './_fake/fake-api.service';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { initializeApp, provideFirebaseApp, getApp  } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { SharedService } from './shared.service';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -22,6 +22,7 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { NgxCaptchaModule } from 'ngx-captcha';
+import { provideAppCheck, initializeAppCheck, ReCaptchaEnterpriseProvider } from '@angular/fire/app-check';
 
 
 // function appInitializer(authService: AuthService) {
@@ -67,7 +68,11 @@ function appInitializer(authService: AuthService) {
     AngularFireModule.initializeApp(environment.firebase), // Make sure you're passing the correct environment variable
     AngularFirestoreModule,
     AngularFireAuthModule,
-    NgxCaptchaModule
+    NgxCaptchaModule,
+    provideAppCheck(() => initializeAppCheck(initializeApp(environment.firebase), {
+      provider: new ReCaptchaEnterpriseProvider(environment.captcha.appCheck),
+      isTokenAutoRefreshEnabled: true
+    }))
   ],
   providers: [
     {
@@ -80,4 +85,12 @@ function appInitializer(authService: AuthService) {
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule { 
+  // constructor() {
+  //   const app = getApp(); // Get the initialized Firebase app
+  //   initializeAppCheck(app, {
+  //     provider: new ReCaptchaEnterpriseProvider(environment.captcha.siteKey),
+  //     isTokenAutoRefreshEnabled: true
+  //   });
+  // }
+}
