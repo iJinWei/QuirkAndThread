@@ -10,6 +10,7 @@ import { AuthService } from 'src/app/modules/auth';
 import { User, IUser } from 'src/app/modules/models/user.model';
 import { FormValidationService } from '../../form-validation.service';
 import Swal from 'sweetalert2';
+import { CloudFunctionService } from 'src/app/cloud-function.service';
 
 
 @Component({
@@ -33,7 +34,8 @@ export class OrderDetailsComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
-    private validationService: FormValidationService
+    private validationService: FormValidationService,
+    private cloudFunctionService: CloudFunctionService
   ) {}
 
   order$: Observable<IOrder>;
@@ -192,44 +194,64 @@ export class OrderDetailsComponent implements OnInit {
 
       if (this.isAdmin || (this.isLogistic && this.orderAssignedToThisLogistic)) {
         if (this.editOrderForm.valid) {
-          const orderData = this.editOrderForm.value;
-          this.validationService.validateEditOrderForm(orderData).subscribe(
-            (response) => {
-              order.deliveryPersonnelId = orderData.deliveryPersonnel;
-              order.orderStatus = orderData.orderStatus;
-              order.deliveryStatus = orderData.deliveryStatus;
+          const orderData = {orderId: order.id, newData: this.editOrderForm.value};
+          this.cloudFunctionService.callEditOrderFunction(orderData)
+          .then(() => {
+            Swal.fire({
+              title: 'Success!',
+              text: 'Order saved successfully.',
+              icon: 'success',
+            });
+            console.log('Order updated successfully');
+            // this.displaySuccessAlert("Order updated successfully");
+            this.resetForm();
+            this.toggleEditMode(order);
+            // this.back();
+          }).catch(error => {
+            console.error('Error updating order:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'Error saving order. Please try again.',
+              icon: 'error',
+            });
+          })
+          // this.validationService.validateEditOrderForm(orderData).subscribe(
+          //   (response) => {
+          //     order.deliveryPersonnelId = orderData.deliveryPersonnel;
+          //     order.orderStatus = orderData.orderStatus;
+          //     order.deliveryStatus = orderData.deliveryStatus;
 
-              this.service.updateOrder(order.id, order).then(() => {
-                Swal.fire({
-                  title: 'Success!',
-                  text: 'Order saved successfully.',
-                  icon: 'success',
-                });
-                console.log('Order updated successfully');
-                // this.displaySuccessAlert("Order updated successfully");
-                this.resetForm();
-                this.toggleEditMode(order);
-                // this.back();
-              }).catch(error => {
-                console.error('Error updating order:', error);
-                Swal.fire({
-                  title: 'Error',
-                  text: 'Error saving order. Please try again.',
-                  icon: 'error',
-                });
-                // this.displayErrorAlert('Error in updating order. Please try again later.');
-              });
-            }, 
-            (error) => {
-              console.error('Invalid Form', error);
-              Swal.fire({
-                title: 'Error',
-                text: 'Error validating order form. Please try again.',
-                icon: 'error',
-              });
-              // this.displayErrorAlert('Error saving order. Please try again.');
-            }
-          )
+          //     this.service.updateOrder(order.id, order).then(() => {
+          //       Swal.fire({
+          //         title: 'Success!',
+          //         text: 'Order saved successfully.',
+          //         icon: 'success',
+          //       });
+          //       console.log('Order updated successfully');
+          //       // this.displaySuccessAlert("Order updated successfully");
+          //       this.resetForm();
+          //       this.toggleEditMode(order);
+          //       // this.back();
+          //     }).catch(error => {
+          //       console.error('Error updating order:', error);
+          //       Swal.fire({
+          //         title: 'Error',
+          //         text: 'Error saving order. Please try again.',
+          //         icon: 'error',
+          //       });
+          //       // this.displayErrorAlert('Error in updating order. Please try again later.');
+          //     });
+          //   }, 
+          //   (error) => {
+          //     console.error('Invalid Form', error);
+          //     Swal.fire({
+          //       title: 'Error',
+          //       text: 'Error validating order form. Please try again.',
+          //       icon: 'error',
+          //     });
+          //     // this.displayErrorAlert('Error saving order. Please try again.');
+          //   }
+          // )
         } else {
           // this.displayErrorAlert('Invalid form.');
           Swal.fire({
@@ -263,7 +285,7 @@ export class OrderDetailsComponent implements OnInit {
   }
 
 
-  deleteOrder(id:string) {
+  deleteOrder(orderId:string) {
     // Ask for confirmation before deleting
     Swal.fire({
       title: 'Are you sure?',
@@ -280,11 +302,21 @@ export class OrderDetailsComponent implements OnInit {
             this.displayAlert('Unauthorized: Insufficient permissions to perform this action.', 'error');
             return;
           }
-          this.service.deleteOrder(id).then((res) => {
-            this.back();
-          }).catch(error => {
-            console.error('Error deleting order:', error);
-            this.displayAlert('Error deleting order. Please try again.', 'error');
+          this.cloudFunctionService.callDeleteOrderFunction(orderId)
+          .then(result => {
+            Swal.fire({
+              title: 'Success!',
+              text: 'Order deleted successfully.',
+              icon: 'success',
+            });
+          })
+          .catch(error => {
+            console.error('Error deleting Order:', error);
+              Swal.fire({
+                title: 'Error',
+                text: 'Error deleting Order. Please try again.',
+                icon: 'error',
+              });
           });
 
         }).catch(error => {
