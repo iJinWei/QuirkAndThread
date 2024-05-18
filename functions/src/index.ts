@@ -49,7 +49,17 @@ async function getSecret(keyName: string) {
   }
 }
 
-exports.verifyRecaptcha = functions.https.onCall(async (data, context) => {
+exports.verifyRecaptcha = functions.runWith({
+  enforceAppCheck: true,
+  consumeAppCheckToken: true,
+}).https.onCall(async (data: any, context: any) => {
+  // Check if the request contains a valid App Check token
+  if (context.app == undefined) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Function must be called from verified client."
+    );
+  }
   // const key = functions.config().recaptcha.local_secret_key;
   // Retrieve the secret key from Google Cloud Secret Manager
   const key = await getSecret("RECAPTCHA_LOCAL_KEY");
@@ -71,7 +81,17 @@ exports.verifyRecaptcha = functions.https.onCall(async (data, context) => {
   });
 });
 
-export const verifyRecaptchaOnProd = functions.https.onCall(async (data, context) => {
+export const verifyRecaptchaOnProd = functions.runWith({
+  enforceAppCheck: true,
+  consumeAppCheckToken: true,
+}).https.onCall(async (data: any, context: any) => {
+  // Check if the request contains a valid App Check token
+  if (context.app == undefined) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Function must be called from verified client."
+    );
+  }
   // const key = functions.config().recaptcha.prod_secret_key;
   // Retrieve the secret key from Google Cloud Secret Manager
   const key = await getSecret("RECAPTCHA_PROD_KEY");
@@ -94,127 +114,18 @@ export const verifyRecaptchaOnProd = functions.https.onCall(async (data, context
   });
 });
 
-export const validateProductForm = functions.https.onCall(async (data, context) => {
-  const formData = data;
 
-  // Fetch categories from Firestore
-  const categoriesSnapshot = await admin.firestore().collection("categories").get();
-  const categories = categoriesSnapshot.docs.map((doc) => ({
-    id: doc.id,
-    name: doc.data().name,
-  }));
-
-  // Validate category
-  if (!formData.category || !formData.categoryId) {
-    throw new functions.https.HttpsError("invalid-argument",
-      "Category is required");
+exports.validateLoginForm = functions.runWith({
+  enforceAppCheck: true,
+  consumeAppCheckToken: true,
+}).https.onCall(async (data: any, context: any) => {
+  // Check if the request contains a valid App Check token
+  if (context.app == undefined) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Function must be called from verified client."
+    );
   }
-
-  // Validate category
-  const matchingCategory = categories.find((category) =>
-    category.id === formData.categoryId && category.name === formData.category);
-  if (!matchingCategory) {
-    throw new functions.https.HttpsError("invalid-argument",
-      "Invalid Category");
-  }
-
-  // Validate description
-  if (!formData.description || formData.description.length > 100) {
-    throw new functions.https.HttpsError("invalid-argument",
-      "Description is required and must be at most 100 characters long");
-  }
-
-  // Validate imageUrl
-  if (!formData.imageUrl || !isValidImageUrl(formData.imageUrl)) {
-    throw new functions.https.HttpsError("invalid-argument", "Invalid imageUrl");
-  }
-
-  // Validate name
-  if (!formData.name || formData.name.length > 30) {
-    throw new functions.https.HttpsError("invalid-argument",
-      "Name is required and must be at most 30 characters long");
-  }
-
-  // Validate price
-  if (!formData.price || !isValidPrice(formData.price)) {
-    throw new functions.https.HttpsError("invalid-argument",
-      "Invalid price. Price must be a number with up to 2 decimal points");
-  }
-
-  // Validate stockQuantity
-  if (!formData.stockQuantity || isNaN(formData.stockQuantity) || formData.stockQuantity <= 0) {
-    throw new functions.https.HttpsError("invalid-argument",
-      "Stock quantity is required and must be a positive number");
-  }
-
-  // If all validations pass, return a success message
-  return {message: "Validation successful"};
-});
-
-/**
- * Validate url
- * @param {string} url
- * @return {boolean}
- */
-function isValidImageUrl(url: string): boolean {
-  // Implement your imageUrl validation logic here
-  // Example: check if the URL ends with ".jpg", ".jpeg", ".png", or ".gif"
-  return /(\.jpg|\.jpeg|\.png|\.gif)$/i.test(url);
-}
-
-/**
- * Validate price
- * @param {string} price
- * @return {boolean}
- */
-function isValidPrice(price: any): boolean {
-  // Implement your price validation logic here
-  // Example: check if price is a number with up to 2 decimal points
-  return /^\d+(\.\d{1,2})?$/.test(price);
-}
-
-export const validateEditOrderForm = functions.https.onCall(async (data, context) => {
-  const formData = data;
-
-  // Fetch orderStatuses from Firestore
-  const orderStatusesSnapshot = await admin.firestore().collection("orderStatus").get();
-  const orderStatuses = orderStatusesSnapshot.docs.map((doc) => doc.data().name);
-
-  // Validate orderStatus
-  if (!formData.orderStatus || !orderStatuses.includes(formData.orderStatus)) {
-    throw new functions.https.HttpsError("invalid-argument",
-      "Order Status is required and must be valid");
-  }
-
-  // Fetch users with role "logistic" from Firestore
-  const usersSnapshot = await admin.firestore().collection("users")
-    .where("roles", "array-contains", "logistic")
-    .where("name", "!=", "superuser")
-    .get();
-  const users = usersSnapshot.docs.map((doc) => doc.data().uid);
-
-  // Validate deliveryPersonnel against available users
-  if (!formData.deliveryPersonnel || !users.includes(formData.deliveryPersonnel)) {
-    throw new functions.https.HttpsError("invalid-argument",
-      "Invalid delivery personnel");
-  }
-
-  // Fetch deliveryStatuses from Firestore
-  const deliveryStatusesSnapshot = await admin.firestore().collection("deliveryStatus").get();
-  const deliveryStatuses = deliveryStatusesSnapshot.docs.map((doc) => doc.data().name);
-
-  // Validate deliveryStatus
-  if (!formData.deliveryStatus || !deliveryStatuses.includes(formData.deliveryStatus)) {
-    throw new functions.https.HttpsError("invalid-argument",
-      "Delivery Status is required and must be valid");
-  }
-
-  // If all validations pass, return a success message
-  return {message: "Validation successful"};
-});
-
-
-exports.validateLoginForm = functions.https.onCall(async (data, context) => {
   const {email, password, recaptcha} = data;
 
   // Perform server-side validation
@@ -245,7 +156,17 @@ exports.validateLoginForm = functions.https.onCall(async (data, context) => {
   return {message: "Validation successful"};
 });
 
-exports.validateRegistrationForm = functions.https.onCall(async (data, context) => {
+exports.validateRegistrationForm = functions.runWith({
+  enforceAppCheck: true,
+  consumeAppCheckToken: true,
+}).https.onCall(async (data: any, context: any) => {
+  // Check if the request contains a valid App Check token
+  if (context.app == undefined) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Function must be called from verified client."
+    );
+  }
   const {fullname, email, password, cPassword, agree, recaptcha} = data;
 
   // Perform server-side validation
@@ -312,7 +233,17 @@ function strongPasswordValidator(password: string) : boolean {
 }
 
 
-exports.checkUserRole = functions.https.onCall(async (data, context) => {
+exports.checkUserRole = functions.runWith({
+  enforceAppCheck: true,
+  consumeAppCheckToken: true,
+}).https.onCall(async (data: any, context: any) => {
+  // Check if the request contains a valid App Check token
+  if (context.app == undefined) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Function must be called from verified client."
+    );
+  }
   const uid = data.id;
 
   try {

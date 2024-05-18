@@ -55,4 +55,35 @@ export class CloudFunctionService {
     const callable = this.fns.httpsCallable('deleteOrder');
     return callable(data).toPromise();
   }
+
+  callViewOrdersFunction(data: any) {
+    const callable = this.fns.httpsCallable('viewOrders');
+    return callable(data);
+  }
+
+  callViewAssignedOrdersFunction(data: any) {
+    const callable = this.fns.httpsCallable('viewAssignedOrders');
+    return callable(data);
+  }
+
+  callValidateLoginForm(data: any) {
+    const callable = this.fns.httpsCallable('validateLoginForm');
+    return callable(data);
+  }
+
+  callValidateRegistrationForm(data: any) {
+    const callable = this.fns.httpsCallable('validateRegistrationForm');
+    return callable(data);
+  }
+
+  callVerifyRecaptchaToken(data: any) {
+    const callable = this.fns.httpsCallable('verifyRecaptchaToken');
+    return callable(data);
+  }
+
+  callViewOrderForStaffFunction(data: any) {
+    const callable = this.fns.httpsCallable('viewOrderForStaff');
+    return callable(data);
+  }
+
 }

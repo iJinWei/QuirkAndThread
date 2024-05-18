@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { AuthService } from 'src/app/modules/auth';
 import { Router } from '@angular/router';
+import { CloudFunctionService } from 'src/app/cloud-function.service';
 
 @Component({
   selector: 'app-order',
@@ -18,12 +19,14 @@ export class OrderComponent implements OnInit {
     closeButtonLabel: 'Cancel'
   };
   @ViewChild('modal') private modalComponent: ModalComponent;
+  
   constructor(
     private service:SharedService, 
     private fb: FormBuilder,  
     private authService:AuthService, 
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private cloudFunctionService: CloudFunctionService
   ) {}
 
   orders$: Observable<any[]>;
@@ -71,14 +74,13 @@ export class OrderComponent implements OnInit {
   }
 
   refreshOrdersForAdmin() {
-    this.orders$ = this.service.getOrders();
+    this.orders$ = this.cloudFunctionService.callViewOrdersFunction({})
     console.log("retrieving all orders")
   }
 
   refreshOrdersForLogistic(userId: string) {
-    this.orders$ = this.service.getOrdersByDeliveryPersonId(userId);
+    this.orders$ = this.cloudFunctionService.callViewAssignedOrdersFunction({})
     console.log("retrieving all orders for logistic user")
-
   }
 
   private showAlert(message: string) {

@@ -31,6 +31,7 @@ const validateOrder = (orderData: any) => {
 
 exports.createOrder = functions.runWith({
   enforceAppCheck: true,
+  consumeAppCheckToken: true,
 }).https.onCall(async (data: any, context: any) => {
   // Check if the request contains a valid App Check token
   if (context.app == undefined) {
@@ -55,15 +56,15 @@ exports.createOrder = functions.runWith({
           "permission-denied",
           "User is not authorized to create a order");
       } else {
-        try {
-          const orderData = data; // Assuming the request body contains the order data
-          if (!validateOrder(orderData)) { // Validate the order data
-            throw new functions.https.HttpsError(
-              "invalid-argument",
-              "Invalid order form."
-            );
-          }
+        const orderData = data; // Assuming the request body contains the order data
+        if (!validateOrder(orderData)) { // Validate the order data
+          throw new functions.https.HttpsError(
+            "invalid-argument",
+            "Invalid order form."
+          );
+        }
 
+        try {
           // Create the order in Firestore
           const orderRef = await admin.firestore().collection("orders").add(orderData);
 
@@ -118,12 +119,13 @@ const validateEditOrderForm = async (data: any) => {
 
 exports.editOrder = functions.runWith({
   enforceAppCheck: true,
+  consumeAppCheckToken: true,
 }).https.onCall(async (data: any, context: any) => {
   // Check if the request contains a valid App Check token
   if (context.app == undefined) {
     throw new functions.https.HttpsError(
-      "unauthenticated",
-      "Authentication required."
+      "failed-precondition",
+      "Function must be called from verified client."
     );
   }
   // Check if the request is authenticated
@@ -144,10 +146,12 @@ exports.editOrder = functions.runWith({
         throw new functions.https.HttpsError("not-found", "Order not found");
       } else {
         isAssignedLogistic = roles.includes("logistic") &&
-        (orderSnapshot?.data()?.deliveryPersonnelId !== uid);
+        (orderSnapshot?.data()?.deliveryPersonnelId === uid);
       }
-
+      console.log("isAdmin: ", isAdmin);
+      console.log("isAssignedLogistic: ", isAssignedLogistic);
       if (!isAdmin && !isAssignedLogistic) {
+        console.log("not authorised to perform this function");
         throw new functions.https.HttpsError(
           "permission-denied",
           "User is not authorized to edit a order");
@@ -155,8 +159,8 @@ exports.editOrder = functions.runWith({
         try {
           if (!validateEditOrderForm(newData)) { // Validate the order data
             throw new functions.https.HttpsError(
-              "failed-precondition",
-              "Function must be called from verified client."
+              "invalid-argument",
+              "Invalid order form."
             );
           }
 
@@ -183,6 +187,7 @@ exports.editOrder = functions.runWith({
 
 exports.deleteOrder = functions.runWith({
   enforceAppCheck: true,
+  consumeAppCheckToken: true,
 }).https.onCall(async (data: any, context: any) => {
   // Check if the request contains a valid App Check token
   if (context.app == undefined) {
@@ -203,7 +208,7 @@ exports.deleteOrder = functions.runWith({
       const isAdmin = roles.includes("admin");
 
       // Fetch the order document
-      const orderId = data;
+      const orderId = data.data;
 
       if (!isAdmin) {
         throw new functions.https.HttpsError(
@@ -240,6 +245,7 @@ exports.deleteOrder = functions.runWith({
 
 exports.viewOrders = functions.runWith({
   enforceAppCheck: true,
+  consumeAppCheckToken: true,
 }).https.onCall(async (data: any, context: any) => {
   // Check if the request contains a valid App Check token
   if (context.app == undefined) {
@@ -270,12 +276,9 @@ exports.viewOrders = functions.runWith({
           const ordersSnapshot = await admin.firestore().collection("orders").get();
 
           // Extract order data
-          const orders: { id: string; data: admin.firestore.DocumentData; }[] = [];
+          const orders: admin.firestore.DocumentData[] = [];
           ordersSnapshot.forEach((doc) => {
-            orders.push({
-              id: doc.id,
-              data: doc.data(),
-            });
+            orders.push(doc.data());
           });
 
           // Return success message
@@ -293,6 +296,7 @@ exports.viewOrders = functions.runWith({
 
 exports.viewAssignedOrders = functions.runWith({
   enforceAppCheck: true,
+  consumeAppCheckToken: true,
 }).https.onCall(async (data: any, context: any) => {
   // Check if the request contains a valid App Check token
   if (context.app == undefined) {
@@ -337,6 +341,113 @@ exports.viewAssignedOrders = functions.runWith({
 
           // Return success message
           return orders;
+        } catch (error: any) {
+          throw new functions.https.HttpsError(
+            "internal",
+            "Internal error."
+          );
+        }
+      }
+    }
+  }
+});
+
+
+exports.viewOrderForCustomer = functions.runWith({
+  enforceAppCheck: true,
+  consumeAppCheckToken: true,
+}).https.onCall(async (data: any, context: any) => {
+  // Check if the request contains a valid App Check token
+  if (context.app == undefined) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Function must be called from verified client."
+    );
+  }
+  // Check if the request is authenticated
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Authentication required.");
+  } else {
+    if (context.auth.uid == undefined) {
+      throw new functions.https.HttpsError("unauthenticated", "Authentication required.");
+    } else {
+      const uid = context.auth.uid;
+      const {roles} = await checkUserRoles(uid);
+      const isCustomer = roles.includes("customer");
+
+      const orderId = data;
+      let belongsToCustomer = false;
+      const orderSnapshot = await admin.firestore().collection("orders").doc(orderId).get();
+      if (!orderSnapshot.exists) {
+        throw new functions.https.HttpsError("not-found", "Order not found");
+      } else {
+        belongsToCustomer = isCustomer &&
+        (orderSnapshot?.data()?.userId === uid);
+      }
+
+      if (!belongsToCustomer) {
+        throw new functions.https.HttpsError(
+          "permission-denied",
+          "User is not authorized to view this order");
+      } else {
+        try {
+          // Return success message
+          return orderSnapshot.data();
+        } catch (error: any) {
+          throw new functions.https.HttpsError(
+            "internal",
+            "Internal error."
+          );
+        }
+      }
+    }
+  }
+});
+
+
+exports.viewOrderForStaff = functions.runWith({
+  enforceAppCheck: true,
+  consumeAppCheckToken: true,
+}).https.onCall(async (data: any, context: any) => {
+  // Check if the request contains a valid App Check token
+  if (context.app == undefined) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Function must be called from verified client."
+    );
+  }
+  // Check if the request is authenticated
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Authentication required.");
+  } else {
+    if (context.auth.uid == undefined) {
+      throw new functions.https.HttpsError("unauthenticated", "Authentication required.");
+    } else {
+      const uid = context.auth.uid;
+      const {roles} = await checkUserRoles(uid);
+
+      const isAdmin = roles.includes("admin");
+      let isAssignedLogistic = false;
+      const orderId = data; // Data sent from the client
+
+      const orderSnapshot = await admin.firestore().collection("orders").doc(orderId).get();
+      if (!orderSnapshot.exists) {
+        throw new functions.https.HttpsError("not-found", "Order not found");
+      } else {
+        isAssignedLogistic = roles.includes("logistic") &&
+        (orderSnapshot?.data()?.deliveryPersonnelId === uid);
+      }
+      console.log("isAdmin: ", isAdmin);
+      console.log("isAssignedLogistic: ", isAssignedLogistic);
+      if (!isAdmin && !isAssignedLogistic) {
+        console.log("not authorised to perform this function");
+        throw new functions.https.HttpsError(
+          "permission-denied",
+          "User is not authorized to view this order");
+      } else {
+        try {
+          // Return success message
+          return orderSnapshot.data();
         } catch (error: any) {
           throw new functions.https.HttpsError(
             "internal",
