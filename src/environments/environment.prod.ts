@@ -168,7 +168,8 @@ export const environment = {
 
   captcha: {
     siteKey: "6LflWcEpAAAAAKPLs5XTe4575faLtmujHjH6kJn-",
-    cloudFunctionUrl: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/verifyRecaptchaOnProd"
+    cloudFunctionUrl: "https://us-central1-quirkandthread-a151e.cloudfunctions.net/verifyRecaptchaOnProd",
+    appCheck: "6LeBvt8pAAAAANKucHbzuxjGNO2FPbp9P52SMg46"
   },
 
   formValidation: {
